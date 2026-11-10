@@ -81,6 +81,13 @@
   @media(prefers-reduced-motion:reduce){.graph .line{animation:none;stroke-dashoffset:0}}
   .about .lead{font-size:1.5rem;font-weight:700;line-height:1.4;margin:0 0 20px}
   .about .made{margin:0;color:#6b6e85;font-weight:600}
+  .credits{margin:20px 4px 0;font-size:.85rem;line-height:1.5;color:#6b6e85}
+  .credits h3{margin:0 0 8px;font-size:.95rem;color:var(--text)}
+  .credits dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+  .credits dt{font-weight:700;color:var(--text)}
+  .credits dd{margin:0}
+  .credits a{color:inherit}
+  @media(max-width:480px){.credits dl{grid-template-columns:1fr}.credits dd{margin-bottom:6px}}
   .nojs{padding:40px;text-align:center}
 </style>
 </head>
@@ -163,6 +170,17 @@
       </svg>
       <p class="lead">Rechne dir deine Zukunft aus!</p>
       <p class="made">Made by Gabsi</p>
+    </div>
+    <div class="credits">
+      <h3>Quellen und Lizenzen</h3>
+      <dl>
+        <dt>Karten</dt><dd>Natural Earth (gemeinfrei), US Census Bureau (gemeinfrei), Bezirke: Statistik Austria (CC BY 4.0), aufbereitet von ginseng666</dd>
+        <dt>Satellitenbilder</dt><dd><a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless – s2maps.eu</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2024), CC BY-NC-SA 4.0</dd>
+        <dt>Länderumrisse</dt><dd><a href="https://github.com/djaiss/mapsicon" target="_blank" rel="noopener">mapsicon</a> von djaiss</dd>
+        <dt>Flaggen</dt><dd><a href="https://github.com/lipis/flag-icons" target="_blank" rel="noopener">flag-icons</a> (MIT)</dd>
+        <dt>Schriften</dt><dd>Inter, Source Sans 3, Barlow Condensed, IBM Plex Sans und Mono (SIL Open Font License)</dd>
+        <dt>Software</dt><dd>D3, TopoJSON, Chart.js, SortableJS, Tailwind CSS (MIT bzw. ISC)</dd>
+      </dl>
     </div>
   </section>
   <noscript><div class="nojs">Bitte JavaScript aktivieren.</div></noscript>
