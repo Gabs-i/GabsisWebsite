@@ -183,7 +183,22 @@ TAG.weltMerkmale={
     "PW":"US-Dollar",
     "NR":"Australischer Dollar",
     "KI":"Australischer Dollar",
-    "TV":"Australischer Dollar"
+    "TV":"Australischer Dollar",
+    "SG":"Singapur-Dollar",
+    "MT":"Euro",
+    "BH":"Bahrain-Dinar",
+    "MU":"Mauritius-Rupie",
+    "MV":"Rufiyaa",
+    "SC":"Seychellen-Rupie",
+    "CV":"Kap-Verde-Escudo",
+    "KM":"Komoren-Franc",
+    "ST":"Dobra",
+    "SZ":"Lilangeni",
+    "AD":"Euro",
+    "MC":"Euro",
+    "LI":"Schweizer Franken",
+    "SM":"Euro",
+    "VA":"Euro"
   },
   sprachen:{
     "AF":["Paschtu","Dari"],
@@ -362,7 +377,21 @@ TAG.weltMerkmale={
     "PW":["Palauisch","Englisch"],
     "NR":["Nauruisch","Englisch"],
     "KI":["Englisch","Gilbertesisch"],
-    "TV":["Tuvaluisch","Englisch"]
+    "TV":["Tuvaluisch","Englisch"],
+    "SG":["Englisch","Malaiisch","Chinesisch (Mandarin)","Tamil"],
+    "MT":["Maltesisch","Englisch"],
+    "BH":["Arabisch"],
+    "MV":["Dhivehi"],
+    "SC":["Seychellenkreol","Englisch","Französisch"],
+    "CV":["Portugiesisch"],
+    "KM":["Komorisch","Französisch","Arabisch"],
+    "ST":["Portugiesisch"],
+    "SZ":["Swati","Englisch"],
+    "AD":["Katalanisch"],
+    "MC":["Französisch"],
+    "LI":["Deutsch"],
+    "SM":["Italienisch"],
+    "VA":["Italienisch","Latein"]
   },
   gericht:{
     "AT":"Wiener Schnitzel",
@@ -443,7 +472,9 @@ TAG.weltMerkmale={
     "LV":"Graue Erbsen mit Speck",
     "DO":"La Bandera",
     "HT":"Griot",
-    "PA":"Sancocho"
+    "PA":"Sancocho",
+    "SG":"Hainanese Chicken Rice",
+    "MT":"Kaninchen-Eintopf (Stuffat tal-Fenek)"
   },
   tier:{
     "AU":"Känguru",
@@ -535,7 +566,9 @@ TAG.weltMerkmale={
     "NA":"Oryx (Gemsbok)",
     "DM":"Kaiseramazone",
     "LC":"Blaumaskenamazone",
-    "VC":"Königsamazone"
+    "VC":"Königsamazone",
+    "MU":"Dodo",
+    "MT":"Pharaonenhund"
   },
   blume:{
     "AT":"Edelweiß",
@@ -594,6 +627,8 @@ TAG.weltMerkmale={
     "PA":"Heilig-Geist-Orchidee",
     "ET":"Kalla",
     "BB":"Stolz von Barbados",
-    "DM":"Bwa Kwaib"
+    "DM":"Bwa Kwaib",
+    "SG":"Orchidee (Vanda Miss Joaquim)",
+    "MT":"Maltesische Flockenblume"
   }
 };
