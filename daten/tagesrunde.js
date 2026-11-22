@@ -26,9 +26,6 @@
 .tr-btn.wide{display:block;width:100%}\
 .tr-btn:disabled{opacity:.45;cursor:default}\
 .tr-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}\
-.tr-seg{display:flex;flex:1 1 230px;background:#e9e5d0;border-radius:12px;padding:4px;gap:4px}\
-.tr-seg button{flex:1;border:0;border-radius:9px;background:transparent;color:var(--muted);font:800 14px Inter,system-ui,sans-serif;padding:8px 6px;cursor:pointer;white-space:nowrap}\
-.tr-seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}\
 .tr-bar select{flex:1 1 120px;font:700 14px Inter,system-ui,sans-serif!important;color:var(--ink)!important;background:#fff!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:10px 10px!important;min-width:0;cursor:pointer}\
 .tr-game{margin-bottom:12px}\
 .tr-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}\
@@ -285,8 +282,6 @@
     V.bar.classList.toggle('hidden', playingDaily);
     V.game.classList.toggle('hidden', v === 'outline');
     C.outline.classList.toggle('hidden', v !== 'outline');
-    V.segO.classList.toggle('on', v === 'outline');
-    V.segF.classList.toggle('on', v !== 'outline');
   }
 
   function renderDaily() {
@@ -327,11 +322,9 @@
 
   function header() {
     var h = el('div', 'tr-head');
-    if (G.mode === 'daily') {
-      var b = el('button', 'tr-back', '‹ Zurück'); b.onclick = function () { setView('outline'); renderDaily(); scrollTop(); };
-      h.appendChild(b);
-      h.appendChild(el('span', 'tr-tag', 'Tagesrunde'));
-    } else h.appendChild(el('span', 'tr-tag', 'Kompletter Ablauf'));
+    var b = el('button', 'tr-back', '‹ Zurück'); b.onclick = function () { setView('outline'); renderDaily(); scrollTop(); };
+    h.appendChild(b);
+    h.appendChild(el('span', 'tr-tag', G.mode === 'daily' ? 'Tagesrunde' : 'Weiter spielen'));
     var sq = el('div', 'sqs'), cur = G.step === 0 ? [0, 1] : G.step < 5 ? [G.step + 1] : [];
     G.res.forEach(function (r, i) { var s = el('i', 'tr-sq' + (r ? ' ' + r : '') + (cur.indexOf(i) >= 0 ? ' cur' : '')); s.title = sqName(i); sq.appendChild(s); });
     h.appendChild(sq);
@@ -363,12 +356,31 @@
   }
 
   /* ---------- Karte ---------- */
+  /* genaue Umrisse (daten/umrisse/…) erst laden, wenn das Land drankommt */
+  var FEIN = {}, FEINW = {};
+  function fein(name, onLoaded) {
+    if (FEIN[name]) return FEIN[name];
+    var url = window.TAG && TAG.feinUmrisse && TAG.feinUmrisse[name]; if (!url) return null;
+    var w = FEINW[name] || (FEINW[name] = []); if (onLoaded) w.push(onLoaded);
+    if (!w.started) {
+      w.started = true;
+      fetch(url).then(function (r) { return r.json(); }).then(function (f) {
+        FEIN[name] = f; var cbs = FEINW[name].slice(); FEINW[name] = [];
+        cbs.forEach(function (fn) { try { fn(f); } catch (e) {} });
+      }).catch(function () { FEINW[name] = []; });
+    }
+    return null;
+  }
   function withFeature(box, it, cb) {
+    if (FEIN[it.topo]) { cb(FEIN[it.topo]); return; }
+    var gid = G && G.id, gstep = G && G.step;
+    fein(it.topo, function (ff) { if (G && G.id === gid && G.step === gstep && box.isConnected) { box.innerHTML = ''; cb(ff); } });
     var f = C.feature(it);
     if (f) { cb(f); return; }
     box.innerHTML = '<div class="tr-wait">Karte lädt …</div>';
     var tries = 0, t = setInterval(function () {
-      f = C.feature(it); tries++;
+      f = FEIN[it.topo] ? null : C.feature(it); tries++;
+      if (FEIN[it.topo] && box.querySelector('svg')) { clearInterval(t); return; }
       if (f) { clearInterval(t); box.innerHTML = ''; cb(f); }
       else if (tries > 150) { clearInterval(t); box.innerHTML = '<div class="tr-wait">Karte konnte nicht geladen werden.</div>'; }
     }, 200);
@@ -712,11 +724,6 @@
     var host = C.host; host.classList.add('tr');
     V.daily = el('div', 'tr-card tr-daily'); host.appendChild(V.daily);
     V.bar = el('div', 'tr-bar'); host.appendChild(V.bar);
-    var seg = el('div', 'tr-seg'); V.bar.appendChild(seg);
-    V.segO = el('button', 'on', 'Nur Umrisse'); V.segF = el('button', '', 'Kompletter Ablauf');
-    seg.appendChild(V.segO); seg.appendChild(V.segF);
-    V.segO.onclick = function () { if (V.view !== 'outline') outlineMode(); };
-    V.segF.onclick = function () { if (V.view !== 'free') startFree(); };
     var sel = el('select'); sel.setAttribute('aria-label', C.filterName);
     sel.innerHTML = C.filter.map(function (f) { return '<option value="' + f[0] + '">' + esc(f[1]) + '</option>'; }).join('');
     sel.value = store.get(C.key + 'Filter', '');
@@ -736,6 +743,7 @@
     inFilter: function (id) { var it = IDX[id]; return !it || inFilter(it); },
     /* für das freie Umriss-Spiel: Hinweis „1.230 km ↗️“ vom getippten zum gesuchten Land */
     zeichne: zeichne,
+    fein: fein,
     hinweis: function (guessName, targetId) { var a = byName(guessName), h = a && hint(a, IDX[targetId]); return h ? h.text : ''; },
     _debug: { todayKey: todayKey, dailyItem: function (k) { return dailyItem(k); }, play: function (id, step) { G = newGame('free', IDX[id], null); G.step = step || 0; setView('free'); renderStep(); return G; }, state: function () { return G; }, makeRound: function (id, k) { return makeRound(IDX[id], k ? mulberry32(hashStr(C.key + ':' + k)) : Math.random, k); } }
   };
