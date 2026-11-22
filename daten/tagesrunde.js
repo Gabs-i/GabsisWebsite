@@ -62,6 +62,11 @@
 .tr input.tr-in.good{border-color:var(--ok)!important;background:#edf6f0!important}\
 .tr input.tr-in.near{border-color:var(--near)!important;background:#fdf1e3!important}\
 .tr input.tr-in:disabled{opacity:1}\
+.tr-hist{font-size:14px;font-weight:700;color:var(--ink)}\
+.tr-hist div{display:flex;gap:6px;align-items:baseline;margin-top:2px}\
+.tr-hist .x{color:var(--far)}\
+.tr-hist b{margin-left:auto;font-weight:800;white-space:nowrap}\
+.tr-hist small{color:var(--muted);font-weight:600}\
 .tr-f .note{font-size:12px;font-weight:700;margin-top:3px;min-height:16px;color:var(--far)}\
 .tr-sug{list-style:none;margin:0;padding:4px;position:absolute;left:0;right:0;top:calc(100% - 14px);z-index:20;background:#fff;border-radius:12px;box-shadow:0 12px 28px rgba(61,64,91,.25);max-height:180px;overflow:auto}\
 .tr-sug:empty{display:none}\
@@ -133,6 +138,21 @@
   var IDX = {}; /* id -> Eintrag */
 
   function sqName(i) { return i === 0 && C.us ? 'Staat' : SQN[i]; }
+  /* Richtung und Entfernung von einem getippten Land zum gesuchten (Mittelpunkt zu Mittelpunkt, wie bei Worldle) */
+  var ARROWS = ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️'];
+  function hint(from, to) {
+    if (!from || !to || from === to || !from.mitte || !to.mitte) return null;
+    var R = Math.PI / 180, la1 = from.mitte[0] * R, la2 = to.mitte[0] * R, dl = (to.mitte[1] - from.mitte[1]) * R;
+    var d = 2 * 6371 * Math.asin(Math.sqrt(Math.pow(Math.sin((la2 - la1) / 2), 2) + Math.cos(la1) * Math.cos(la2) * Math.pow(Math.sin(dl / 2), 2)));
+    var b = Math.atan2(Math.sin(dl) * Math.cos(la2), Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl)) / R;
+    var km = d < 100 ? Math.round(d / 5) * 5 : Math.round(d / 10) * 10;
+    return { km: km, arrow: ARROWS[Math.round(((b + 360) % 360) / 45) % 8], text: km.toLocaleString('de-DE') + ' km ' + ARROWS[Math.round(((b + 360) % 360) / 45) % 8] };
+  }
+  function byName(v) {
+    var n = norm(v); if (!n) return null;
+    for (var i = 0; i < C.items.length; i++) { var it = C.items[i]; if ([it.name, it.topo].concat(it.alias || []).some(function (a) { return norm(a) === n; })) return it; }
+    return null;
+  }
   function idOf(it) { return it.iso || it.ab; }
   function lowerIn(it) { return it['in'].charAt(0).toLowerCase() + it['in'].slice(1); }
   function groupOf(it) { return C.us ? [it.region] : it.kont; }
@@ -166,6 +186,7 @@
         (C.fakten[idOf(o)] || []).forEach(function (f) {
           var t = f[1].replace('{IN}', it['in']);
           if (t === truth) return;
+          if (it.terr && /Bundesstaat|Staat/.test(f[1])) return;
           if (f[0] === cat) (sameGroup(o, it) ? pool : pool2).push(t); else pool3.push(t);
         });
       });
@@ -180,7 +201,9 @@
     R.frage = makeQuestion(it, rnd);
     /* Runde 5: Flaggen */
     var nb = shuffle((it.nb || []).filter(function (x) { return IDX[x] && C.flaggen.datei[x]; }), rnd).slice(0, 3);
-    var rest = shuffle(C.items.map(idOf).filter(function (x) { return x !== R.id && nb.indexOf(x) < 0; }), rnd);
+    var others = C.items.filter(function (o) { return o !== it && nb.indexOf(idOf(o)) < 0; });
+    var same = shuffle(others.filter(function (o) { return sameGroup(o, it); }), rnd).slice(0, Math.max(0, 3 - nb.length)).map(idOf);
+    var rest = same.concat(shuffle(others.map(idOf).filter(function (x) { return same.indexOf(x) < 0; }), rnd));
     var fl = shuffle([R.id].concat(nb, rest.slice(0, 5 - nb.length)), rnd);
     R.flags = { opts: fl, right: fl.indexOf(R.id) };
     /* Runde 2: Städte – Reihenfolge der Punkte */
@@ -357,7 +380,7 @@
     var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + w + ' ' + h)
       .style('filter', 'drop-shadow(0px 6px 12px rgba(61,64,91,.22))');
     var g = svg.append('g'), proj;
-    if (C.us) {
+    if (C.us && !(feature.properties && feature.properties.geo)) {
       var path = d3.geoPath(), b = path.bounds(feature);
       var dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1];
       var sc = Math.min((w - 2 * pad) / dx, (h - 2 * pad) / dy), tx = w / 2 - sc * (b[0][0] + b[1][0]) / 2, ty = h / 2 - sc * (b[0][1] + b[1][1]) / 2;
@@ -369,9 +392,18 @@
       var c = d3.geoCentroid(f);
       var pr = d3.geoMercator().rotate([-c[0], 0]).fitExtent([[pad, pad], [w - pad, h - pad]], f);
       g.append('path').datum(feature).attr('class', 'shape').attr('d', d3.geoPath(pr)).style('stroke-width', 1.4);
+      dots(g, feature, d3.geoPath(pr), 1);
       proj = function (la, lo) { return pr([lo, la]); };
     }
     return { svg: svg, proj: proj, w: w, h: h };
+  }
+  /* winzige Inseln (Atolle) als kleine Kreise, damit man sie überhaupt sieht */
+  function dots(g, feature, path, sc) {
+    var gm = feature.geometry; if (!gm) return;
+    (gm.type === 'MultiPolygon' ? gm.coordinates : [gm.coordinates]).forEach(function (c) {
+      var p = { type: 'Polygon', coordinates: c }, b = path.bounds(p);
+      if (Math.max(b[1][0] - b[0][0], b[1][1] - b[0][1]) * sc < 5) { var ct = path.centroid(p); if (isFinite(ct[0])) g.append('circle').attr('class', 'shape').attr('cx', ct[0]).attr('cy', ct[1]).attr('r', 3.5 / sc).style('stroke-width', 1.2 / sc); }
+    });
   }
   /* nur die Landesteile, auf denen die Städte liegen (sonst wird z. B. Frankreich samt Überseegebieten winzig) */
   function mainland(feature, pts) {
@@ -391,7 +423,7 @@
     var F = frame(C.us ? 'Welcher Bundesstaat ist das?' : 'Welches Land ist das?');
     var box = el('div', 'tr-map'); F.body.appendChild(box);
     withFeature(box, it, function (f) { drawShape(box, it, f, null); });
-    var P = G.part.r1 || (G.part.r1 = { n: 0, c: 0, nv: '', cv: '' });
+    var P = G.part.r1 || (G.part.r1 = { n: 0, c: 0, nv: '', cv: '' }); P.ng = P.ng || [];
     var fields = el('div', 'tr-fields'); F.body.appendChild(fields);
     var fN = field(C.us ? 'Bundesstaat' : 'Land', C.namen), fC = field('Hauptstadt', C.hauptstaedte);
     fields.appendChild(fN.w); fields.appendChild(fC.w);
@@ -405,7 +437,7 @@
     function okCap(v) { var n = norm(v); return !!n && [it.hs].concat(it.hsAlt || []).some(function (a) { return norm(a) === n; }); }
     function check() {
       fN.close(); fC.close();
-      if (G.res[0] == null) { P.nv = fN.inp.value.trim(); P.n++; if (okName(P.nv)) G.res[0] = P.n === 1 ? 'ok' : 'near'; else if (P.n >= 2) G.res[0] = 'far'; }
+      if (G.res[0] == null) { P.nv = fN.inp.value.trim(); P.n++; if (okName(P.nv)) G.res[0] = P.n === 1 ? 'ok' : 'near'; else { P.ng.push(P.nv); if (P.n >= 2) G.res[0] = 'far'; } }
       if (G.res[1] == null) { P.cv = fC.inp.value.trim(); P.c++; if (okCap(P.cv)) G.res[1] = P.c === 1 ? 'ok' : 'near'; else if (P.c >= 2) G.res[1] = 'far'; }
       paint(true);
     }
@@ -422,6 +454,10 @@
     }
     function paint(fromCheck) {
       mark(fN, G.res[0], P.n, it.name); mark(fC, G.res[1], P.c, it.hs);
+      fN.hist.innerHTML = P.ng.map(function (g) {
+        var o = byName(g), h = o && hint(o, it);
+        return '<div><span class="x">✗</span> ' + esc(o ? o.name : g) + (h ? ' <b>' + h.text + '</b>' : ' <small>(unbekannt)</small>') + '</div>';
+      }).join('');
       if (G.res[0] && G.res[1]) {
         chk.parentNode && row.remove();
         var cls = G.res[0] === 'far' && G.res[1] === 'far' ? 'far' : (G.res[0] === 'ok' && G.res[1] === 'ok') ? 'ok' : 'near';
@@ -441,7 +477,8 @@
     var w = el('div', 'tr-f'), lb = el('label', null, esc(label)), inp = el('input', 'tr-in'), ul = el('ul', 'tr-sug'), note = el('div', 'note');
     inp.type = 'text'; inp.autocomplete = 'off'; inp.setAttribute('autocorrect', 'off'); inp.setAttribute('autocapitalize', 'words'); inp.spellcheck = false;
     inp.placeholder = label === 'Hauptstadt' ? 'Hauptstadt …' : label + ' …';
-    w.appendChild(lb); w.appendChild(inp); w.appendChild(note); w.appendChild(ul);
+    var hist = el('div', 'tr-hist');
+    w.appendChild(lb); w.appendChild(inp); w.appendChild(note); w.appendChild(hist); w.appendChild(ul);
     var idx = 0, items = [];
     function draw() {
       var q = norm(inp.value); ul.innerHTML = ''; idx = 0; items = [];
@@ -466,7 +503,7 @@
       else if (e.key === 'Escape') close();
     });
     inp.addEventListener('blur', function () { setTimeout(close, 150); });
-    return { w: w, inp: inp, note: note, close: close, sugOpen: function () { return items.length > 0; } };
+    return { w: w, inp: inp, note: note, hist: hist, close: close, sugOpen: function () { return items.length > 0; } };
   }
 
   /* ---------- Runde 2: Lage der Hauptstadt ---------- */
@@ -672,6 +709,8 @@
   window.UmrissTag = {
     init: init,
     inFilter: function (id) { var it = IDX[id]; return !it || inFilter(it); },
+    /* für das freie Umriss-Spiel: Hinweis „1.230 km ↗️“ vom getippten zum gesuchten Land */
+    hinweis: function (guessName, targetId) { var a = byName(guessName), h = a && hint(a, IDX[targetId]); return h ? h.text : ''; },
     _debug: { todayKey: todayKey, dailyItem: function (k) { return dailyItem(k); }, play: function (id, step) { G = newGame('free', IDX[id], null); G.step = step || 0; setView('free'); renderStep(); return G; }, state: function () { return G; }, makeRound: function (id, k) { return makeRound(IDX[id], k ? mulberry32(hashStr(C.key + ':' + k)) : Math.random, k); } }
   };
 })();

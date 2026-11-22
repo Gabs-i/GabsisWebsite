@@ -170,5 +170,20 @@ TAG.weltFakten={
 "YE":[["K","{IN} steht in Schibam eine Stadt aus Lehmhochhäusern, das „Manhattan der Wüste“."],["T","{IN} wachsen auf der Insel Sokotra die bizarren Drachenblutbäume."],["W","{IN} war die Hafenstadt Mokka namensgebend für eine Kaffeesorte."]],
 "ZA":[["H","{IN} war Nelson Mandela der erste schwarze Präsident."],["G","{IN} liegt der Tafelberg über Kapstadt."],["L","{IN} gibt es zwölf Amtssprachen, darunter Afrikaans und Zulu."],["K","{IN} wurde 1967 die erste Herztransplantation der Welt durchgeführt."]],
 "ZM":[["G","{IN} wurde die Stadt Livingstone nahe den Victoriafällen nach dem Entdecker David Livingstone benannt."],["W","{IN} wurde im South-Luangwa-Nationalpark die Fuß-Safari (Walking Safari) erfunden."]],
-"ZW":[["H","{IN} liegen die Ruinen von Groß-Simbabwe, die dem Land den Namen gaben."],["R","{IN} erreichte die Inflation 2008 Werte von Milliarden Prozent – es gab einen 100-Billionen-Dollar-Schein."]]
+"ZW":[["H","{IN} liegen die Ruinen von Groß-Simbabwe, die dem Land den Namen gaben."],["R","{IN} erreichte die Inflation 2008 Werte von Milliarden Prozent – es gab einen 100-Billionen-Dollar-Schein."]],
+"AG":[["G","{IN} soll es 365 Strände geben – einen für jeden Tag des Jahres."],["H","{IN} liegt Nelson’s Dockyard, eine britische Marinewerft aus dem 18. Jahrhundert und UNESCO-Welterbe."]],
+"BB":[["K","{IN} wurde die Sängerin Rihanna geboren."],["H","{IN} wurde 2021 die Republik ausgerufen – die britische Königin war seitdem nicht mehr Staatsoberhaupt."],["K","{IN} wird mit Mount Gay einer der ältesten noch bestehenden Rums der Welt gebrannt."]],
+"DM":[["G","{IN} liegt der Boiling Lake, einer der größten kochenden Seen der Welt."],["T","{IN} ist der Kaiseramazone (Sisserou-Papagei) auf der Flagge abgebildet."]],
+"GD":[["W","{IN} wird so viel Muskatnuss angebaut, dass sie sogar auf der Flagge abgebildet ist."],["H","{IN} marschierten 1983 US-Truppen bei einer Invasion ein."],["K","{IN} entstand 2006 in der Molinere-Bucht der erste Unterwasser-Skulpturenpark der Welt."]],
+"KN":[["R","{IN} lebt man im flächenmäßig kleinsten unabhängigen Staat Amerikas."],["H","{IN} thront die Festung Brimstone Hill, ein UNESCO-Welterbe, über dem Meer."]],
+"LC":[["G","{IN} ragen die beiden Vulkankegel Pitons direkt aus dem Meer."],["K","{IN} wurden mit Derek Walcott und Arthur Lewis zwei Nobelpreisträger geboren – pro Kopf mehr als irgendwo sonst."]],
+"VC":[["K","{IN} wurden in der Wallilabou-Bucht Szenen von „Fluch der Karibik“ gedreht."],["G","{IN} brach 2021 der Vulkan La Soufrière auf der Hauptinsel aus."]],
+"FM":[["H","{IN} liegen die Ruinen von Nan Madol, einer Stadt aus Basaltsäulen im Meer."],["K","{IN} wurden auf der Insel Yap riesige Steinscheiben (Rai) als Geld verwendet."]],
+"MH":[["H","{IN} testeten die USA auf dem Bikini-Atoll Atombomben."],["R","{IN} liegt das Kwajalein-Atoll, eines der größten Atolle der Welt."]],
+"TO":[["S","{IN} wurde der Fahnenträger Pita Taufatofua bekannt, der 2016 eingeölt und mit nacktem Oberkörper ins Olympiastadion einzog."],["G","{IN} explodierte 2022 der Unterwasservulkan Hunga Tonga–Hunga Haʻapai mit einer der stärksten Eruptionen seit Jahrzehnten."]],
+"WS":[["H","{IN} wurde 2011 die Datumsgrenze verschoben – der 30. Dezember fiel einfach aus."],["H","{IN} lag von 1900 bis 1914 die Kolonie Deutsch-Samoa."]],
+"PW":[["T","{IN} kann man im Jellyfish Lake mit Millionen Quallen schwimmen, die kaum nesseln."],["R","{IN} wurde 2009 das weltweit erste Hai-Schutzgebiet eingerichtet."]],
+"NR":[["R","{IN} lebt man im kleinsten Inselstaat der Welt."],["W","{IN} wurde ein Großteil der Insel für den Phosphatabbau umgegraben."],["K","{IN} gibt es keine offizielle Hauptstadt."]],
+"KI":[["R","{IN} liegt das Staatsgebiet auf allen vier Erdhalbkugeln – nördlich, südlich, östlich und westlich."],["R","{IN} beginnt der neue Tag auf den Line Islands früher als irgendwo sonst auf der Welt."]],
+"TV":[["W","{IN} verdient der Staat viel Geld mit der Internet-Endung „.tv“."],["G","{IN} liegt der höchste Punkt des Landes nur rund 4,6 Meter über dem Meer."]]
 };

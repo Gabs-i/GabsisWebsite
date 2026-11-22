@@ -51,7 +51,11 @@ TAG.usMerkmale={
     "WA":"Goldzeisig",
     "WV":"Rotkardinal",
     "WI":"Wanderdrossel",
-    "WY":"Wiesenstärling"
+    "WY":"Wiesenstärling",
+    "PR":"Puerto-Rico-Spindalis",
+    "GU":"Guamralle (Koʻkoʻ)",
+    "VI":"Zuckervogel",
+    "MP":"Marianen-Fruchttaube"
   },
   blume:{
     "AL":"Kamelie",
@@ -103,7 +107,11 @@ TAG.usMerkmale={
     "WA":"Pazifischer Rhododendron",
     "WV":"Rhododendron",
     "WI":"Veilchen",
-    "WY":"Kastilleja"
+    "WY":"Kastilleja",
+    "PR":"Flor de Maga",
+    "GU":"Bougainvillea",
+    "VI":"Gelbe Trompetenblume",
+    "MP":"Plumeria"
   },
   baum:{
     "AL":"Sumpfkiefer",
@@ -155,7 +163,10 @@ TAG.usMerkmale={
     "WA":"Westamerikanische Hemlocktanne",
     "WV":"Zucker-Ahorn",
     "WI":"Zucker-Ahorn",
-    "WY":"Pappel"
+    "WY":"Pappel",
+    "PR":"Ceiba",
+    "GU":"Ifit",
+    "MP":"Flammenbaum"
   },
   spitzname:{
     "AL":"Yellowhammer State",
@@ -207,7 +218,10 @@ TAG.usMerkmale={
     "WA":"Evergreen State",
     "WV":"Mountain State",
     "WI":"Badger State",
-    "WY":"Equality State"
+    "WY":"Equality State",
+    "PR":"Isla del Encanto",
+    "GU":"Where America’s Day Begins",
+    "VI":"America’s Paradise"
   },
   abk:{
     "AL":"AL",
@@ -259,6 +273,11 @@ TAG.usMerkmale={
     "WA":"WA",
     "WV":"WV",
     "WI":"WI",
-    "WY":"WY"
+    "WY":"WY",
+    "PR":"PR",
+    "GU":"GU",
+    "VI":"VI",
+    "AS":"AS",
+    "MP":"MP"
   }
 };

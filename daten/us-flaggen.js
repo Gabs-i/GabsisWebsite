@@ -1,6 +1,7 @@
 /* Flaggen USA: Dateien in daten/flaggen-us/<Abk>.svg
    Quelle: npm-Paket us-state-flags 1.0.7, Lizenz ISC (Flaggen selbst gemeinfrei).
-   Geändert, damit kein Staatsname lesbar ist: AR CA ID IL IA KS MT ND OK OR SD WA WI (Schriftzug abgedeckt). */
+   Geändert, damit kein Staatsname lesbar ist: AR CA ID IL IA KS MT ND OK OR SD WA WI (Schriftzug abgedeckt).
+   Überseegebiete PR GU VI AS MP: flag-icons 7.0.0 (MIT); bei GU der Schriftzug „GUAM“ entfernt, bei VI die Buchstaben V I abgedeckt. */
 var TAG = window.TAG = window.TAG || {};
 TAG.usFlaggen={ordner:'daten/flaggen-us/',datei:{
 "AL":"AL.svg",
@@ -52,5 +53,10 @@ TAG.usFlaggen={ordner:'daten/flaggen-us/',datei:{
 "WA":"WA.svg",
 "WV":"WV.svg",
 "WI":"WI.svg",
-"WY":"WY.svg"
+"WY":"WY.svg",
+"PR":"PR.svg",
+"GU":"GU.svg",
+"VI":"VI.svg",
+"AS":"AS.svg",
+"MP":"MP.svg"
 }};

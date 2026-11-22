@@ -168,7 +168,22 @@ TAG.weltMerkmale={
     "YE":"Jemen-Rial",
     "ZA":"Rand",
     "ZM":"Kwacha (Sambia)",
-    "ZW":"Simbabwe-Gold (ZiG)"
+    "ZW":"Simbabwe-Gold (ZiG)",
+    "AG":"Ostkaribischer Dollar",
+    "BB":"Barbados-Dollar",
+    "DM":"Ostkaribischer Dollar",
+    "GD":"Ostkaribischer Dollar",
+    "KN":"Ostkaribischer Dollar",
+    "LC":"Ostkaribischer Dollar",
+    "VC":"Ostkaribischer Dollar",
+    "FM":"US-Dollar",
+    "MH":"US-Dollar",
+    "TO":"Paʻanga",
+    "WS":"Tala",
+    "PW":"US-Dollar",
+    "NR":"Australischer Dollar",
+    "KI":"Australischer Dollar",
+    "TV":"Australischer Dollar"
   },
   sprachen:{
     "AF":["Paschtu","Dari"],
@@ -332,7 +347,22 @@ TAG.weltMerkmale={
     "YE":["Arabisch"],
     "ZA":["Zulu","Xhosa","Afrikaans","Englisch","Sesotho","Setswana","Swati","Tsonga","Venda","Ndebele","Sepedi","Gebärdensprache"],
     "ZM":["Englisch"],
-    "ZW":["Englisch","Shona","Ndebele"]
+    "ZW":["Englisch","Shona","Ndebele"],
+    "AG":["Englisch"],
+    "BB":["Englisch"],
+    "DM":["Englisch"],
+    "GD":["Englisch"],
+    "KN":["Englisch"],
+    "LC":["Englisch"],
+    "VC":["Englisch"],
+    "FM":["Englisch"],
+    "MH":["Marshallesisch","Englisch"],
+    "TO":["Tongaisch","Englisch"],
+    "WS":["Samoanisch","Englisch"],
+    "PW":["Palauisch","Englisch"],
+    "NR":["Nauruisch","Englisch"],
+    "KI":["Englisch","Gilbertesisch"],
+    "TV":["Tuvaluisch","Englisch"]
   },
   gericht:{
     "AT":"Wiener Schnitzel",
@@ -502,7 +532,10 @@ TAG.weltMerkmale={
     "GY":"Hoatzin",
     "TT":"Scharlachsichler",
     "BS":"Flamingo",
-    "NA":"Oryx (Gemsbok)"
+    "NA":"Oryx (Gemsbok)",
+    "DM":"Kaiseramazone",
+    "LC":"Blaumaskenamazone",
+    "VC":"Königsamazone"
   },
   blume:{
     "AT":"Edelweiß",
@@ -559,6 +592,8 @@ TAG.weltMerkmale={
     "GT":"Weiße Nonne (Orchidee)",
     "CR":"Guaria Morada (Orchidee)",
     "PA":"Heilig-Geist-Orchidee",
-    "ET":"Kalla"
+    "ET":"Kalla",
+    "BB":"Stolz von Barbados",
+    "DM":"Bwa Kwaib"
   }
 };

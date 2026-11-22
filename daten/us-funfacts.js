@@ -51,5 +51,10 @@ TAG.usFakten={
 "WA":[["W","{IN} haben Microsoft, Amazon und Starbucks ihren Sitz."],["G","{IN} brach 1980 der Vulkan Mount St. Helens aus."],["K","{IN} steht in Seattle die Space Needle."]],
 "WV":[["G","{IN} liegt der ganze Staat in den Appalachen."],["R","{IN} spannt sich die New River Gorge Bridge, über die jedes Jahr Fallschirmspringer springen dürfen."],["H","{IN} spaltete sich der Staat im Bürgerkrieg von Virginia ab."]],
 "WI":[["W","{IN} wird mehr Käse hergestellt als in jedem anderen Bundesstaat."],["S","{IN} spielen die Green Bay Packers, das einzige NFL-Team, das den Fans gehört."],["W","{IN} wurde die Motorradmarke Harley-Davidson gegründet, in Milwaukee."]],
-"WY":[["R","{IN} liegt der Yellowstone-Nationalpark größtenteils, der älteste Nationalpark der Welt."],["R","{IN} leben weniger Menschen als in jedem anderen Bundesstaat."],["H","{IN} durften Frauen ab 1869 wählen – als Erste in den USA."],["G","{IN} ragt der Devils Tower aus der Prärie."]]
+"WY":[["R","{IN} liegt der Yellowstone-Nationalpark größtenteils, der älteste Nationalpark der Welt."],["R","{IN} leben weniger Menschen als in jedem anderen Bundesstaat."],["H","{IN} durften Frauen ab 1869 wählen – als Erste in den USA."],["G","{IN} ragt der Devils Tower aus der Prärie."]],
+"PR":[["K","{IN} wurde der Cocktail Piña Colada erfunden."],["R","{IN} stand das Arecibo-Observatorium, dessen 305-Meter-Teleskop 2020 einstürzte."],["T","{IN} quaken nachts überall die winzigen Coquí-Frösche."]],
+"GU":[["H","{IN} versteckte sich der japanische Soldat Shōichi Yokoi bis 1972 im Dschungel."],["T","{IN} hat die eingeschleppte Braune Nachtbaumnatter fast alle einheimischen Waldvögel ausgerottet."]],
+"VI":[["H","{IN} kauften die USA 1917 das Gebiet von Dänemark."],["L","{IN} fährt man links, obwohl es US-Gebiet ist."],["G","{IN} besteht ein Großteil der Insel St. John aus einem Nationalpark."]],
+"AS":[["R","{IN} liegt mit dem Rose-Atoll der südlichste Punkt der USA."],["S","{IN} kommen gemessen an der Einwohnerzahl besonders viele NFL-Spieler her."]],
+"MP":[["H","{IN} startete 1945 von der Insel Tinian das Flugzeug, das die Atombombe auf Hiroshima abwarf."],["H","{IN} fand 1944 die Schlacht um Saipan statt."]]
 };
