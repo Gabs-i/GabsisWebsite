@@ -44,11 +44,12 @@
 .tr-map svg{display:block;width:100%;height:100%}\
 @media(max-width:520px){.tr-map{height:210px}.tr-map.big{height:250px!important}.tr-q{font-size:19px;margin-bottom:10px}}\
 .tr-map .shape{fill:#81b29a;stroke:#4a3a2a;stroke-linejoin:round}\
-.tr-map .pt{fill:#fff;stroke:#3d405b;stroke-width:2.5px;transition:fill .2s}\
-.tr-map .pt.bad{fill:var(--far);stroke:#7d2b22}\
-.tr-map .pt.good{fill:var(--ok);stroke:#24573b}\
-.tr-map .pt.show{fill:var(--ok);stroke:#24573b;animation:trpulse 1s ease-in-out 3}\
-@keyframes trpulse{50%{stroke-width:7px}}\
+/* Punkte wie im Welt-Städte-Pin: dunkel mit weißem Rand; eigener falscher Tipp orange, richtige Stadt grün */\
+.tr-map .pt{fill:#3d405b;stroke:#fff;stroke-width:2px;transition:fill .2s}\
+.tr-map .pt.bad{fill:#e07a5f}\
+.tr-map .pt.good{fill:var(--ok)}\
+.tr-map .pt.show{fill:var(--ok);animation:trpulse .9s ease-in-out 3}\
+@keyframes trpulse{50%{stroke-width:5px}}\
 .tr-map .hit{fill:transparent;cursor:pointer}\
 .tr-map .lbl{font:700 12px Inter,system-ui,sans-serif;fill:#3d405b;paint-order:stroke;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}\
 .tr-map .lbl.cap{font-weight:900}\
@@ -391,18 +392,42 @@
       var f = pts ? mainland(feature, pts) : feature;
       var c = d3.geoCentroid(f);
       var pr = d3.geoMercator().rotate([-c[0], 0]).fitExtent([[pad, pad], [w - pad, h - pad]], f);
-      g.append('path').datum(feature).attr('class', 'shape').attr('d', d3.geoPath(pr)).style('stroke-width', 1.4);
-      dots(g, feature, d3.geoPath(pr), 1);
+      var gp2 = d3.geoPath(pr);
+      var mainP = g.append('path').datum(feature).attr('class', 'shape').attr('d', gp2).style('stroke-width', 1.4);
+      if (!pts) zeichne(g, feature, gp2, 1, mainP); else zeichne(g, feature, gp2, 1, mainP);
       proj = function (la, lo) { return pr([lo, la]); };
     }
     return { svg: svg, proj: proj, w: w, h: h };
   }
-  /* winzige Inseln (Atolle) als kleine Kreise, damit man sie überhaupt sieht */
-  function dots(g, feature, path, sc) {
+  /* Umriss nachzeichnen: bei Inselgruppen werden sehr kleine Inseln um ihren Mittelpunkt vergrößert
+     (echte Form und Lage bleiben erhalten, Atollringe und Inselbögen werden erkennbar);
+     winzige Splitter werden zu Punkten. sc = Bildschirm-Pixel pro Pfad-Einheit, main = schon gezeichneter Umriss */
+  function zeichne(g, feature, path, sc, main) {
     var gm = feature.geometry; if (!gm) return;
-    (gm.type === 'MultiPolygon' ? gm.coordinates : [gm.coordinates]).forEach(function (c) {
+    var info = (gm.type === 'MultiPolygon' ? gm.coordinates : [gm.coordinates]).map(function (c) {
       var p = { type: 'Polygon', coordinates: c }, b = path.bounds(p);
-      if (Math.max(b[1][0] - b[0][0], b[1][1] - b[0][1]) * sc < 5) { var ct = path.centroid(p); if (isFinite(ct[0])) g.append('circle').attr('class', 'shape').attr('cx', ct[0]).attr('cy', ct[1]).attr('r', 3.5 / sc).style('stroke-width', 1.2 / sc); }
+      return { p: p, b: b, s: Math.max(b[1][0] - b[0][0], b[1][1] - b[0][1]) * sc, c: path.centroid(p) };
+    }).filter(function (x) { return isFinite(x.c[0]) && isFinite(x.s); });
+    if (!info.length) return;
+    var mx = Math.max.apply(null, info.map(function (x) { return x.s; }));
+    var fill = main.style('fill'), stroke = main.style('stroke'), ink = stroke || '#4a3a2a';
+    function dot(x) { g.append('circle').attr('cx', x.c[0]).attr('cy', x.c[1]).attr('r', 1.6 / sc).style('fill', ink); }
+    if (mx >= 40) {
+      info.forEach(function (x) {
+        if (x.s >= 2.5) return;
+        var inside = info.some(function (y) { return y.s >= 25 && x.c[0] >= y.b[0][0] && x.c[0] <= y.b[1][0] && x.c[1] >= y.b[0][1] && x.c[1] <= y.b[1][1]; });
+        if (!inside) dot(x);
+      });
+      if (mx < 70) main.style('stroke-width', 1 / sc);
+      return;
+    }
+    main.style('display', 'none');
+    info.sort(function (a, b) { return b.s - a.s; }).forEach(function (x) {
+      var f = x.s < 16 ? Math.min(16 / Math.max(x.s, 0.05), 8) : 1;
+      if (x.s * f < 3) { dot(x); return; }
+      var tr = f === 1 ? null : 'translate(' + x.c[0] + ',' + x.c[1] + ') scale(' + f + ') translate(' + (-x.c[0]) + ',' + (-x.c[1]) + ')';
+      g.append('path').attr('d', path(x.p)).attr('transform', tr).style('fill', fill).style('stroke', stroke)
+        .style('stroke-width', 0.9 / (sc * f)).style('stroke-linejoin', 'round');
     });
   }
   /* nur die Landesteile, auf denen die Städte liegen (sonst wird z. B. Frankreich samt Überseegebieten winzig) */
@@ -531,7 +556,7 @@
       kept = G.R.pts.map(function (p) { return kept.filter(function (k) { return k.p === p; })[0]; }).filter(Boolean);
       var gp = S.svg.append('g'), gl = S.svg.append('g');
       var dots = kept.map(function (k, i) {
-        var c = gp.append('circle').attr('class', 'pt').attr('cx', k.xy[0]).attr('cy', k.xy[1]).attr('r', 9);
+        var c = gp.append('circle').attr('class', 'pt').attr('cx', k.xy[0]).attr('cy', k.xy[1]).attr('r', 7);
         var near = Math.min.apply(null, kept.map(function (o) { return o === k ? 99 : Math.hypot(o.xy[0] - k.xy[0], o.xy[1] - k.xy[1]); }));
         gp.append('circle').attr('class', 'hit').attr('cx', k.xy[0]).attr('cy', k.xy[1]).attr('r', Math.max(10, Math.min(22, near / 2)))
           .on('click', function () { tap(i); });
@@ -710,6 +735,7 @@
     init: init,
     inFilter: function (id) { var it = IDX[id]; return !it || inFilter(it); },
     /* für das freie Umriss-Spiel: Hinweis „1.230 km ↗️“ vom getippten zum gesuchten Land */
+    zeichne: zeichne,
     hinweis: function (guessName, targetId) { var a = byName(guessName), h = a && hint(a, IDX[targetId]); return h ? h.text : ''; },
     _debug: { todayKey: todayKey, dailyItem: function (k) { return dailyItem(k); }, play: function (id, step) { G = newGame('free', IDX[id], null); G.step = step || 0; setView('free'); renderStep(); return G; }, state: function () { return G; }, makeRound: function (id, k) { return makeRound(IDX[id], k ? mulberry32(hashStr(C.key + ':' + k)) : Math.random, k); } }
   };
