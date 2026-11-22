@@ -1,10 +1,10 @@
 /* Kontinentansichten für das Grenzregionen-Quiz: Projektion und Bildausschnitt (wird auch beim Auswählen der Regionen benutzt) */
 (function (root) {
   var A = {
-    europa:      { name: 'Europa',      w: 1000, h: 1050, proj: function (d3) { return d3.geoConicConformal().rotate([-15, 0]).parallels([40, 65]); },
-                   rahmen: [[-11, 36], [60, 36], [60, 70], [-11, 70], [25, 71], [25, 34.5], [5, 35.5], [-9, 43]] },
-    asien:       { name: 'Asien',       w: 1000, h: 820,  proj: function (d3) { return d3.geoAzimuthalEqualArea().rotate([-100, -40]); },
-                   rahmen: [[26, 40], [44, 12], [95, -10], [141, -9], [178, 64], [-170, 66], [100, 78], [60, 74], [30, 62]] },
+    europa:      { name: 'Europa',      w: 1000, h: 1150, proj: function (d3) { return d3.geoConicConformal().rotate([-15, 0]).parallels([40, 65]); },
+                   rahmen: [[-11, 36], [60, 36], [60, 70], [-11, 70], [25, 71], [-9, 30.5], [10, 30.5], [30, 30], [45, 32.5]] },
+    asien:       { name: 'Asien',       w: 1000, h: 860,  proj: function (d3) { return d3.geoAzimuthalEqualArea().rotate([-100, -40]); },
+                   rahmen: [[20, 54.5], [28, 69.5], [34, 30], [44, 12], [95, -10], [141, -9], [178, 64], [-170, 66], [100, 78], [60, 74]] },
     afrika:      { name: 'Afrika',      w: 1000, h: 1080, proj: function (d3) { return d3.geoAzimuthalEqualArea().rotate([-18, -3]); },
                    rahmen: [[-17.5, 15], [51.5, 12], [20, 37.5], [20, -35], [-17, 28], [50, -25], [10, 37.5], [33, 31.5]] },
     nordamerika: { name: 'Nordamerika', w: 1000, h: 1000, proj: function (d3) { return d3.geoConicConformal().rotate([100, 0]).parallels([20, 60]); },
