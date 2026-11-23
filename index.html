@@ -68,6 +68,9 @@
   .ico svg{display:block;width:24px;height:24px}
   .tip{margin:2px 10px 6px;padding:12px 2px 4px;border-top:1px solid rgba(61,64,91,.08);font-size:.86rem;line-height:1.45;color:#6b6d85;display:flex;gap:10px;align-items:flex-start}
   .tip svg{flex:none;width:18px;height:18px;margin-top:1px;color:#e07a5f}
+  .tip .tipx{flex:none;margin:-6px -6px 0 auto;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:none;color:#8a8ca3;font-size:1.3rem;line-height:1;cursor:pointer}
+  .tip .tipx:hover{background:rgba(61,64,91,.06);color:var(--text)}
+  .tip.gone{display:none}
   .tip b{color:var(--text);font-weight:600}
   .tip small{display:block;font-size:.78rem;color:#8a8ca3;margin-top:2px}
   .tip button{margin-top:8px;font:inherit;font-weight:600;font-size:.82rem;color:#fff;background:var(--text);border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
@@ -159,7 +162,7 @@
         <li><a class="item" href="#satellit"><span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke-width="3"><path fill="#a5a3c9" d="M22.187 4.024c-1.698 1.239-4.065 3.78-4.687 8.546c.168 2.085.35 4.142.535 6.12L4.53 26.287A3 3 0 0 0 3 28.902v1.813a1.5 1.5 0 0 0 1.864 1.455l14.2-3.55c.53 4.718.936 7.81.936 7.81l-4.766 4.56A4 4 0 0 0 14 43.88v.666a1 1 0 0 0 1.357.934L24 42.172l8.642 3.308A1 1 0 0 0 34 44.546v-.666a4 4 0 0 0-1.234-2.89L28 36.43s.406-3.092.936-7.81l14.2 3.55A1.5 1.5 0 0 0 45 30.715v-1.813a3 3 0 0 0-1.53-2.615L29.966 18.69c.186-1.979.367-4.035.535-6.12c-.623-4.766-2.99-7.307-4.687-8.546a3.05 3.05 0 0 0-3.626 0Z"/><path stroke="#3d405b" stroke-linejoin="round" d="M22.187 4.024c-1.698 1.239-4.065 3.78-4.687 8.546c.168 2.085.35 4.142.535 6.12L4.53 26.287A3 3 0 0 0 3 28.902v1.813a1.5 1.5 0 0 0 1.864 1.455l14.2-3.55c.53 4.718.936 7.81.936 7.81l-4.766 4.56A4 4 0 0 0 14 43.88v.666a1 1 0 0 0 1.357.934L24 42.172l8.642 3.308A1 1 0 0 0 34 44.546v-.666a4 4 0 0 0-1.234-2.89L28 36.43s.406-3.092.936-7.81l14.2 3.55A1.5 1.5 0 0 0 45 30.715v-1.813a3 3 0 0 0-1.53-2.615L29.966 18.69c.186-1.979.367-4.035.535-6.12c-.623-4.766-2.99-7.307-4.687-8.546a3.05 3.05 0 0 0-3.626 0Z"/></g></svg></span><span class="nm">Cities from Above</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
         <li><a class="item" href="#reise"><span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke-width="3"><path fill="#fff" d="M35.269 44.408c.08.494.555.726 1.017.535c.817-.338 2.273-.997 4.479-2.188c1.477-.798 2.45-1.436 3.085-1.916c.793-.598.794-1.57 0-2.169c-.635-.48-1.608-1.118-3.085-1.915c-2.206-1.19-3.662-1.85-4.479-2.188c-.462-.192-.936.041-1.017.535c-.128.776-.269 2.19-.269 4.653s.141 3.877.269 4.653"/><path fill="#81b29a" d="M25 24a5 5 0 1 0 10 0a5 5 0 1 0-10 0M13 40a5 5 0 1 0 10 0a5 5 0 1 0-10 0M10 8a5 5 0 1 0 10 0a5 5 0 1 0-10 0"/><path stroke="#3d405b" stroke-linecap="round" stroke-linejoin="round" d="M3 8h7m25 16a8 8 0 1 0 0-16H20m-7 32a8 8 0 1 1 0-16h12m-2 16h12M10 8a5 5 0 1 0 10 0a5 5 0 1 0-10 0"/><path stroke="#3d405b" stroke-linecap="round" stroke-linejoin="round" d="M13 40a5 5 0 1 0 10 0a5 5 0 1 0-10 0m12-16a5 5 0 1 0 10 0a5 5 0 1 0-10 0m10.269 20.408c.08.494.555.726 1.017.535c.817-.338 2.273-.997 4.479-2.188c1.477-.798 2.45-1.436 3.085-1.916c.793-.598.794-1.57 0-2.169c-.635-.48-1.608-1.118-3.085-1.915c-2.206-1.19-3.662-1.85-4.479-2.188c-.462-.192-.936.041-1.017.535c-.128.776-.269 2.19-.269 4.653s.141 3.877.269 4.653"/></g></svg></span><span class="nm">Routle – World</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>
       </ul>
-      <p class="tip" lang="de"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg><span><b>Jederzeit spielen:</b> Füge Gabsi's Hub als App zu deinem Homescreen hinzu.<small>iPhone: Teilen → Zum Home-Bildschirm · Android: Menü ⋮ → Zum Startbildschirm hinzufügen</small><button id="installBtn" type="button" hidden>App installieren</button></span></p>
+      <p class="tip" id="appTip" lang="de"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg><span><b>Jederzeit spielen:</b> Füge Gabsi's Hub als App zu deinem Homescreen hinzu.<small>iPhone: Teilen → Zum Home-Bildschirm · Android: Menü ⋮ → Zum Startbildschirm hinzufügen</small><button id="installBtn" type="button" hidden>App installieren</button></span><button class="tipx" id="tipClose" type="button" aria-label="Hinweis schließen">×</button></p>
     </details>
     <details class="cat" open style="--c:#81b29a">
       <summary><span class="ct">World Quizzes</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
@@ -394,6 +397,9 @@
 </script>
 <script>
 (function(){
+  var tip=document.getElementById('appTip'), x=document.getElementById('tipClose');
+  try{ if(localStorage.getItem('appTipClosed')==='1') tip.classList.add('gone'); }catch(e){}
+  if(x) x.addEventListener('click',function(){ tip.classList.add('gone'); try{localStorage.setItem('appTipClosed','1');}catch(e){} });
   var btn=document.getElementById('installBtn'), ev=null;
   if(!btn) return;
   window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();ev=e;btn.hidden=false;});
