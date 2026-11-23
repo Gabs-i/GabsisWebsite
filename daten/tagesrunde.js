@@ -106,14 +106,14 @@
 .tr-copied{font-size:13px;color:var(--ok);text-align:center;margin-top:6px;min-height:18px;font-weight:700}\
 .tr-wait{display:grid;place-items:center;height:100%;color:var(--muted);font-weight:700}\
 .tr-give{margin-top:14px}\
-.tr-grows{display:grid;gap:5px;margin:4px 0 10px}\
-.tr-grow{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) 44px 66px;gap:5px;font:700 14px/1.2 Inter,system-ui,sans-serif;color:#3d405b}\
-.tr-grow>span{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:40px;padding:6px 6px;border:2px solid #e5e2d3;background:#faf9f4;border-radius:12px;min-width:0;font-variant-numeric:tabular-nums}\
+.tr-grows{display:grid;gap:4px;margin:4px 0 10px}\
+.tr-grow{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1.05fr) 38px 52px;gap:4px;font:700 13px/1.1 Inter,system-ui,sans-serif;color:#3d405b}\
+.tr-grow>span{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;text-align:center;height:30px;padding:0 8px;border:1.5px solid #ddd8c4;background:#faf9f4;border-radius:999px;min-width:0;font-variant-numeric:tabular-nums;white-space:nowrap}\
 .tr-grow>span:first-child{overflow:hidden}\
-.tr-grow b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}\
-.tr-grow small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;margin-top:1px}\
+.tr-grow b{display:block;min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}\
+.tr-grow small{display:block;min-width:0;flex:0 10 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}\
 .tr-grow small.y{color:#2f7a55}.tr-grow small.n{color:#c25a3f;text-decoration:line-through}\
-.tr-grow .ar{font-size:20px}\
+.tr-grow .ar{font-size:16px;padding:0}\
 .tr-grow>span:not(:first-child){white-space:nowrap}\
 .tr-hist .tr-grows{display:grid!important;margin-top:6px}\
 .tr-hist .tr-grow{display:grid!important;align-items:stretch;margin:0}\
