@@ -342,6 +342,11 @@
     nx.onclick = function () { G.step++; save(); if (G.step >= 5) finish(); else renderStep(); };
     return { body: body, fb: fb, next: nx };
   }
+  /* „Weiß ich nicht“: Runde ohne weitere Versuche auflösen */
+  function giveRow(F, fn) {
+    var row = el('div', 'tr-row'), b = el('button', 'tr-btn soft', 'Weiß ich nicht');
+    b.type = 'button'; b.onclick = fn; row.appendChild(b); F.body.appendChild(row); return row;
+  }
   function feedback(f, cls, html) { f.className = 'tr-fb ' + cls; f.innerHTML = html; }
   function doneStep(F) { F.next.classList.remove('hidden'); save(); refreshHead(); }
   function refreshHead() { var h = V.game.querySelector('.tr-head'); if (h) h.replaceWith(header()); }
@@ -574,6 +579,7 @@
           .on('click', function () { tap(i); });
         return c;
       });
+      var gv = G.res[2] == null ? giveRow(F, function () { if (G.res[2] != null) return; G.res[2] = 'far'; paint(true); }) : null;
       function tap(i) {
         if (G.res[2] != null || P.wrong.indexOf(i) >= 0) return;
         if (kept[i].p[3]) { G.res[2] = P.wrong.length ? 'near' : 'ok'; }
@@ -586,6 +592,7 @@
           if (P.wrong.length) feedback(F.fb, 'far', 'Das ist nicht ' + esc(it.hs) + ' – noch ein Versuch.');
           save(); refreshHead(); return;
         }
+        if (gv) gv.remove();
         kept.forEach(function (k, i) {
           if (k.p[3]) dots[i].classed(G.res[2] === 'far' ? 'show' : 'good', true);
           var x = k.xy[0], right = x > S.w - 90;
@@ -627,8 +634,10 @@
       var b = el('button', 'tr-opt', o); b.onclick = function () { if (G.res[slot] != null) return; P.pick = i; G.res[slot] = i === right ? 'ok' : 'far'; paint(); };
       box.appendChild(b); return b;
     });
+    var gv = G.res[slot] == null ? giveRow(F, function () { if (G.res[slot] != null) return; P.pick = null; G.res[slot] = 'far'; paint(); }) : null;
     function paint() {
       if (G.res[slot] == null) return;
+      if (gv) gv.remove();
       bs.forEach(function (b, i) { b.disabled = true; if (i === right) b.classList.add('good'); else if (i === P.pick) b.classList.add('bad'); else b.classList.add('dim'); });
       after(G.res[slot]); doneStep(F);
     }
@@ -653,8 +662,10 @@
       };
       box.appendChild(b); return b;
     });
+    var gv = G.res[5] == null ? giveRow(F, function () { if (G.res[5] != null) return; G.res[5] = 'far'; paint(); }) : null;
     function paint() {
       P.wrong.forEach(function (i) { bs[i].classList.add('bad'); });
+      if (G.res[5] != null && gv) gv.remove();
       if (G.res[5] == null) { if (P.wrong.length) feedback(F.fb, 'far', 'Falsch – noch ein Versuch.'); save(); refreshHead(); return; }
       bs.forEach(function (b, i) {
         b.disabled = true; if (i === R.right) b.classList.add('good');
