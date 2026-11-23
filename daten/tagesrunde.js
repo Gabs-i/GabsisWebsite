@@ -4,9 +4,10 @@
   'use strict';
   var CATS = ['G', 'H', 'K', 'S', 'R', 'L', 'W', 'T'];
   var CATN = { G: 'Geografie', H: 'Geschichte', K: 'Essen & Kultur', S: 'Sport', R: 'Rekorde', L: 'Sprache', W: 'Wirtschaft', T: 'Tiere & Natur' };
-  var SQN = ['Land', 'Hauptstadt', 'Lage', 'Fun Fact', 'Frage', 'Flagge'];
+  var SQN = ['Land', 'Hauptstadt', 'Lage', 'Bild', 'Frage', 'Flagge'];
   var EMO = { ok: '🟩', near: '🟧', far: '🟥', skip: '⬜' };
-  var STEPN = ['Umriss', 'Lage der Hauptstadt', 'Fun Fact', 'Zufallsfrage', 'Flagge'];
+  var STEPN = ['Umriss', 'Lage der Hauptstadt', 'Bilderfrage', 'Zufallsfrage', 'Flagge'];
+  var PIC = ['vogel', 'baum', 'blume', 'tier']; /* Fragearten mit Fotos von Wikipedia */
 
   var CSS = '\
 .tr{--ink:#3d405b;--muted:#7b7d93;--green:#81b29a;--ok:#5fae84;--near:#f59a2f;--far:#d6574a;--line:rgba(61,64,91,.12);--soft:#faf9f4;font-family:Inter,system-ui,sans-serif;color:var(--ink);text-align:left}\
@@ -121,7 +122,10 @@
 .tr-lb{position:fixed;inset:0;z-index:1000;background:rgba(29,31,48,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;cursor:zoom-out}\
 .tr-lb img{max-width:94vw;max-height:72vh;display:block;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5)}\
 .tr-lb span{color:#fff;font:700 14px Inter,system-ui,sans-serif;opacity:.85}\
-.tr-opt .pic{display:block;width:100%;aspect-ratio:4/3;border-radius:8px;background:#ece8d8 center/cover no-repeat;margin-bottom:8px}\
+.tr-opt .pic{position:relative;display:block;width:100%;aspect-ratio:4/3;border-radius:8px;background:#ece8d8 center/cover no-repeat;margin-bottom:8px}\
+.tr-opt .pic .tr-zoom{position:absolute;top:5px;right:5px;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.95);box-shadow:0 1px 4px rgba(0,0,0,.25);display:grid;place-items:center;cursor:zoom-in}\
+.tr-opt .pic .tr-zoom.hidden{display:none}\
+.tr-opt .pic .tr-zoom svg{width:16px;height:16px;fill:none;stroke:#3d405b;stroke-width:2.4;stroke-linecap:round}\
 .tr-opt .pic.none{display:none}\
 .tr-credit{font-size:11px;color:var(--muted);margin-top:8px;text-align:left}\
 .tr-credit a{color:inherit}\
@@ -188,36 +192,13 @@
   /* ---------- Inhalte der Runden erzeugen ---------- */
   function makeRound(it, rnd, k) {
     var R = { id: idOf(it) };
-    /* Runde 3: Fun Fact */
-    var facts = C.fakten[R.id] || [];
-    var start = k ? ((dayNum(k) % 8) + 8) % 8 : Math.floor(rnd() * 8), cat = null, own = [];
-    for (var s = 0; s < 8 && !own.length; s++) {
-      cat = CATS[(start + s) % 8];
-      own = facts.filter(function (f) { return f[0] === cat; });
-    }
-    if (own.length) {
-      var truth = pick(own, rnd)[1].replace('{IN}', it['in']);
-      var pool = [], pool2 = [], pool3 = [];
-      C.items.forEach(function (o) {
-        if (o === it) return;
-        /* Nachbarn teilen oft Berge, Seen oder Wüsten – deren Aussagen könnten auch hier stimmen */
-        if ((it.nb || []).indexOf(idOf(o)) >= 0 || (o.nb || []).indexOf(R.id) >= 0) return;
-        (C.fakten[idOf(o)] || []).forEach(function (f) {
-          var t = f[1].replace('{IN}', it['in']);
-          if (t === truth) return;
-          if (it.terr && /Bundesstaat|Staat/.test(f[1])) return;
-          if (f[0] === cat) (sameGroup(o, it) ? pool : pool2).push(t); else pool3.push(t);
-        });
-      });
-      var wrong = [];
-      [shuffle(pool, rnd), shuffle(pool2, rnd), shuffle(pool3, rnd)].forEach(function (p) {
-        p.forEach(function (t) { if (wrong.length < 3 && wrong.indexOf(t) < 0) wrong.push(t); });
-      });
-      var opts = shuffle([truth].concat(wrong), rnd);
-      R.fact = { cat: cat, opts: opts, right: opts.indexOf(truth) };
-    }
-    /* Runde 4: Zufallsfrage */
-    R.frage = makeQuestion(it, rnd);
+    /* Runde 3: Bilderfrage (Vogel, Baum, Blume, Tier) mit Fotos */
+    R.bild = makeQuestion(it, rnd, function (k) { return PIC.indexOf(k) >= 0; });
+    /* Runde 4: Zufallsfrage aus den übrigen Fragearten */
+    R.frage = makeQuestion(it, rnd, function (k) { return PIC.indexOf(k) < 0; }) ||
+      makeQuestion(it, rnd, function (k) { return !R.bild || k !== R.bild.kind; });
+    /* ohne Tier/Blume/Vogel/Baum: Runde 3 wird eine zweite Textfrage einer anderen Art */
+    if (!R.bild) R.bild = makeQuestion(it, rnd, function (k) { return PIC.indexOf(k) < 0 && (!R.frage || k !== R.frage.kind); });
     /* Runde 5: Flaggen */
     var nb = shuffle((it.nb || []).filter(function (x) { return IDX[x] && C.flaggen.datei[x]; }), rnd).slice(0, 3);
     var others = C.items.filter(function (o) { return o !== it && nb.indexOf(idOf(o)) < 0; });
@@ -230,9 +211,9 @@
     return R;
   }
 
-  function makeQuestion(it, rnd) {
+  function makeQuestion(it, rnd, only) {
     var M = C.merkmale, id = idOf(it), kinds = [];
-    Object.keys(C.fragen).forEach(function (k) { if (M[k] && M[k][id] && (!Array.isArray(M[k][id]) || M[k][id].length)) kinds.push(k); });
+    Object.keys(C.fragen).forEach(function (k) { if (only && !only(k)) return; if (M[k] && M[k][id] && (!Array.isArray(M[k][id]) || M[k][id].length)) kinds.push(k); });
     if (!kinds.length) return null;
     var kind = pick(kinds, rnd), right, others = [];
     var val = M[kind][id];
@@ -396,7 +377,144 @@
     'Lignum vitae': 'Guaiacum officinale', 'Passionsblume': 'Passiflora', 'Weiße Nonne (Orchidee)': 'Lycaste skinneri',
     'Guaria Morada (Orchidee)': 'Guarianthe skinneri', 'Heilig-Geist-Orchidee': 'Peristeria elata', 'Kalla': 'Zantedeschia aethiopica',
     'Stolz von Barbados': 'Caesalpinia pulcherrima', 'Bwa Kwaib': 'Sabinea carinalis', 'Orchidee (Vanda Miss Joaquim)': 'Papilionanthe Miss Joaquim',
-    'Maltesische Flockenblume': 'Cheirolophus crassifolius'
+    'Maltesische Flockenblume': 'Cheirolophus crassifolius',
+    'Goldspecht': 'Northern flicker',
+    'Moorschneehuhn': 'Willow ptarmigan',
+    'Kaktuszaunkönig': 'Cactus wren',
+    'Spottdrossel': 'Northern mockingbird',
+    'Schopfwachtel': 'California quail',
+    'Lerchenammer': 'Lark bunting',
+    'Wanderdrossel': 'American robin',
+    'Blue-Hen-Huhn': ['Blue Hen chicken', 'Delaware Blue Hen'],
+    'Rote Spottdrossel': 'Brown thrasher',
+    'Hawaiigans (Nene)': 'Nene (bird)',
+    'Berghüttensänger': 'Mountain bluebird',
+    'Rotkardinal': 'Northern cardinal',
+    'Goldzeisig': 'American goldfinch',
+    'Wiesenstärling': 'Western meadowlark',
+    'Brauner Pelikan': 'Brown pelican',
+    'Schwarzkopfmeise': 'Black-capped chickadee',
+    'Baltimoretrupial': 'Baltimore oriole',
+    'Eistaucher': 'Common loon',
+    'Rotkehl-Hüttensänger': 'Eastern bluebird',
+    'Purpurgimpel': 'Purple finch',
+    'Rennkuckuck': 'Greater roadrunner',
+    'Scherenschwanz-Tyrann': 'Scissor-tailed flycatcher',
+    'Kragenhuhn': 'Ruffed grouse',
+    'Rhode-Island-Red-Huhn': 'Rhode Island Red',
+    'Carolinazaunkönig': 'Carolina wren',
+    'Jagdfasan': 'Common pheasant',
+    'Kalifornienmöwe': 'California gull',
+    'Einsiedlerdrossel': 'Hermit thrush',
+    'Puerto-Rico-Spindalis': 'Puerto Rican spindalis',
+    'Guamralle (Koʻkoʻ)': 'Guam rail',
+    'Zuckervogel': 'Bananaquit',
+    'Marianen-Fruchttaube': 'Mariana fruit dove',
+    'Sumpfkiefer': 'Pinus palustris',
+    'Sitka-Fichte': 'Sitka spruce',
+    'Palo Verde': ['Parkinsonia florida', 'Parkinsonia'],
+    'Weihrauch-Kiefer': 'Pinus taeda',
+    'Küstenmammutbaum': 'Sequoia sempervirens',
+    'Stech-Fichte': 'Picea pungens',
+    'Weiß-Eiche': 'Quercus alba',
+    'Amerikanische Stechpalme': 'Ilex opaca',
+    'Palmettopalme': 'Sabal palmetto',
+    'Virginia-Eiche': 'Quercus virginiana',
+    'Lichtnussbaum': 'Aleurites moluccanus',
+    'Westliche Weymouth-Kiefer': 'Pinus monticola',
+    'Tulpenbaum': 'Liriodendron tulipifera',
+    'Eiche': 'Oak',
+    'Pappel': 'Populus deltoides',
+    'Sumpfzypresse': 'Taxodium distichum',
+    'Weymouth-Kiefer': 'Pinus strobus',
+    'Amerikanische Ulme': 'Ulmus americana',
+    'Amerikanische Rotkiefer': 'Pinus resinosa',
+    'Gelb-Kiefer': 'Pinus ponderosa',
+    'Pinyon-Kiefer': 'Pinus edulis',
+    'Papier-Birke': 'Betula papyrifera',
+    'Rot-Eiche': 'Quercus rubra',
+    'Zucker-Ahorn': 'Acer saccharum',
+    'Ohio-Rosskastanie': 'Aesculus glabra',
+    'Judasbaum': 'Cercis canadensis',
+    'Douglasie': 'Pseudotsuga menziesii',
+    'Kanadische Hemlocktanne': 'Tsuga canadensis',
+    'Rot-Ahorn': 'Acer rubrum',
+    'Black-Hills-Fichte': 'Picea glauca',
+    'Pekannussbaum': 'Pecan',
+    'Amerikanische Zitterpappel': 'Populus tremuloides',
+    'Westamerikanische Hemlocktanne': 'Tsuga heterophylla',
+    'Ceiba': 'Ceiba pentandra',
+    'Ifit': 'Intsia bijuga',
+    'Flammenbaum': 'Delonix regia',
+    'Känguru': 'Red kangaroo',
+    'Großer Panda': 'Giant panda',
+    'Biber': 'North American beaver',
+    'Weißkopfseeadler': 'Bald eagle',
+    'Springbock': 'Springbok',
+    'Komodowaran': 'Komodo dragon',
+    'Bengalischer Tiger': 'Bengal tiger',
+    'Kiwi': 'Kiwi (bird)',
+    'Löwe': 'Lion',
+    'Gallischer Hahn': 'Gallic rooster',
+    'Adler': 'Golden eagle',
+    'Braunbär': 'Brown bear',
+    'Steinadler': 'Golden eagle',
+    'Jaguar': 'Jaguar',
+    'Rotbauchtöpfer': 'Rufous hornero',
+    'Andenkondor': 'Andean condor',
+    'Vikunja': 'Vicuña',
+    'Trupial': 'Venezuelan troupial',
+    'Quetzal': 'Resplendent quetzal',
+    'Grüner Fasan': 'Green pheasant',
+    'Tiger': 'Tiger',
+    'Asiatischer Elefant': 'Asian elephant',
+    'Kuh': 'Cattle',
+    'Ceylonhuhn': 'Sri Lankan junglefowl',
+    'Philippinenadler': 'Philippine eagle',
+    'Przewalski-Pferd': 'Przewalski\'s horse',
+    'Achal-Tekkiner-Pferd': 'Akhal-Teke',
+    'Falke': 'Saker falcon',
+    'Arabische Oryx': 'Arabian oryx',
+    'Wiedehopf': 'Eurasian hoopoe',
+    'Giraffe': 'Giraffe',
+    'Kronenkranich': 'Grey crowned crane',
+    'Schreiseeadler': 'African fish eagle',
+    'Steppenzebra': 'Plains zebra',
+    'Katta': 'Ring-tailed lemur',
+    'Gerfalke': 'Gyrfalcon',
+    'Elch': 'Moose',
+    'Höckerschwan': 'Mute swan',
+    'Wolf': 'Wolf',
+    'Stier': 'Bull',
+    'Hahn von Barcelos': 'Rooster of Barcelos',
+    'Seeadler': 'White-tailed eagle',
+    'Turul': 'Turul',
+    'Marder': 'European pine marten',
+    'Wisent': 'European bison',
+    'Weißstorch': 'White stork',
+    'Bachstelze': 'White wagtail',
+    'Rauchschwalbe': 'Barn swallow',
+    'Schraubenziege (Markhor)': 'Markhor',
+    'Schneeleopard': 'Snow leopard',
+    'Wasserbüffel': 'Water buffalo',
+    'Kouprey': 'Kouprey',
+    'Tocororo': 'Cuban trogon',
+    'Wimpelschwanz-Kolibri': 'Red-billed streamertail',
+    'Harpyie': 'Harpy eagle',
+    'Weißwedelhirsch': 'White-tailed deer',
+    'Sägeracke': 'Turquoise-browed motmot',
+    'Paradiesvogel': 'Raggiana bird-of-paradise',
+    'Takin': 'Takin',
+    'Nacktkehlglockenvogel': 'Bare-throated bellbird',
+    'Hoatzin': 'Hoatzin',
+    'Scharlachsichler': 'Scarlet ibis',
+    'Flamingo': 'American flamingo',
+    'Oryx (Gemsbok)': 'Gemsbok',
+    'Kaiseramazone': 'Imperial amazon',
+    'Blaumaskenamazone': 'Saint Lucia amazon',
+    'Königsamazone': 'St. Vincent amazon',
+    'Dodo': 'Dodo',
+    'Pharaonenhund': 'Pharaoh Hound'
   };
   function wikiThumb(name, cb) {
     var titles = WIKI[name]; if (!titles) return cb(null);
@@ -430,7 +548,7 @@
     var it = IDX[G.id];
     if (G.step === 0) return stepOutline(it);
     if (G.step === 1) return stepCity(it);
-    if (G.step === 2) return stepFact(it);
+    if (G.step === 2) return stepPic(it);
     if (G.step === 3) return stepQuestion(it);
     if (G.step === 4) return stepFlag(it);
   }
@@ -681,14 +799,15 @@
     });
   }
 
-  /* ---------- Runde 3: Fun Fact ---------- */
-  function stepFact(it) {
-    var R = G.R.fact;
+  /* ---------- Runde 3: Bilderfrage ---------- */
+  function stepPic(it) {
+    var R = G.R.bild;
     if (!R) { G.res[3] = 'skip'; G.step++; save(); return renderStep(); }
-    var F = frame('Welche Aussage über ' + esc(it.name) + ' stimmt?');
-    V.game.querySelector('.tr-step').textContent = 'Runde 3 von 5 · Fun Fact · ' + CATN[R.cat];
-    choice(F, R.opts.map(esc), R.right, 3, false, function (r) {
-      feedback(F.fb, r, r === 'ok' ? 'Richtig!' : 'Leider falsch – die grün markierte Aussage stimmt.');
+    var F = frame(esc(R.q));
+    if (PIC.indexOf(R.kind) >= 0) return picChoice(F, R, 3);
+    V.game.querySelector('.tr-step').textContent = 'Runde 3 von 5 · Zusatzfrage';
+    choice(F, R.opts.map(esc), R.right, 3, R.opts.every(function (o) { return o.length <= 22; }), function (r) {
+      feedback(F.fb, r, r === 'ok' ? 'Richtig!' : 'Richtig wäre: <b>' + esc(R.opts[R.right]) + '</b>.');
     });
   }
 
@@ -697,22 +816,30 @@
     var R = G.R.frage;
     if (!R) { G.res[4] = 'skip'; G.step++; save(); return renderStep(); }
     var F = frame(esc(R.q));
-    var pics = R.kind === 'blume';
-    var bs = choice(F, R.opts.map(function (o) { return (pics ? '<span class="pic"></span>' : '') + esc(o); }), R.right, 4, pics || R.opts.every(function (o) { return o.length <= 22; }), function (r) {
+    if (PIC.indexOf(R.kind) >= 0) return picChoice(F, R, 4);
+    choice(F, R.opts.map(esc), R.right, 4, R.opts.every(function (o) { return o.length <= 22; }), function (r) {
       feedback(F.fb, r, r === 'ok' ? 'Richtig!' : 'Richtig wäre: <b>' + esc(R.opts[R.right]) + '</b>.');
     });
-    if (pics) {
-      var any = false, credit = el('div', 'tr-credit hidden', 'Bilder: <a href="https://en.wikipedia.org" target="_blank" rel="noopener">Wikipedia / Wikimedia Commons</a>');
-      F.body.appendChild(credit);
-      R.opts.forEach(function (o, i) {
-        var pic = bs[i].querySelector('.pic');
-        wikiThumb(o, function (w) {
-          if (!w) { pic.classList.add('none'); return; }
-          pic.style.backgroundImage = 'url("' + w.src.replace(/"/g, '%22') + '")';
-          if (!any) { any = true; credit.classList.remove('hidden'); }
-        });
+  }
+
+  /* Auswahl mit Foto je Antwort; die Lupe zeigt das Foto groß, ohne zu antworten */
+  function picChoice(F, R, slot) {
+    var LUPE = '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
+    var bs = choice(F, R.opts.map(function (o) { return '<span class="pic"><i class="tr-zoom hidden" role="button" aria-label="Foto vergrößern">' + LUPE + '</i></span>' + esc(o); }), R.right, slot, true, function (r) {
+      feedback(F.fb, r, r === 'ok' ? 'Richtig!' : 'Richtig wäre: <b>' + esc(R.opts[R.right]) + '</b>.');
+    });
+    var any = false, credit = el('div', 'tr-credit hidden', 'Fotos: <a href="https://en.wikipedia.org" target="_blank" rel="noopener">Wikipedia / Wikimedia Commons</a>');
+    F.body.appendChild(credit);
+    R.opts.forEach(function (o, i) {
+      var pic = bs[i].querySelector('.pic'), zb = pic.querySelector('.tr-zoom');
+      wikiThumb(o, function (w) {
+        if (!w) { pic.classList.add('none'); return; }
+        pic.style.backgroundImage = 'url("' + w.src.replace(/"/g, '%22') + '")';
+        zb.classList.remove('hidden');
+        zb.onclick = function (e) { e.stopPropagation(); e.preventDefault(); lightbox(w.big || w.src, o); };
+        if (!any) { any = true; credit.classList.remove('hidden'); }
       });
-    }
+    });
   }
 
   function choice(F, opts, right, slot, two, after) {
