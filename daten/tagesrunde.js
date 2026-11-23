@@ -106,16 +106,28 @@
 .tr-copied{font-size:13px;color:var(--ok);text-align:center;margin-top:6px;min-height:18px;font-weight:700}\
 .tr-wait{display:grid;place-items:center;height:100%;color:var(--muted);font-weight:700}\
 .tr-give{margin-top:14px}\
+.tr-grows{display:grid;gap:5px;margin:4px 0 10px}\
+.tr-grow{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) 44px 66px;gap:5px;font:700 14px/1.2 Inter,system-ui,sans-serif;color:#3d405b}\
+.tr-grow>span{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:40px;padding:6px 6px;border:2px solid #e5e2d3;background:#faf9f4;border-radius:12px;min-width:0;font-variant-numeric:tabular-nums}\
+.tr-grow>span:first-child{overflow:hidden}\
+.tr-grow b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}\
+.tr-grow small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;margin-top:1px}\
+.tr-grow small.y{color:#2f7a55}.tr-grow small.n{color:#c25a3f;text-decoration:line-through}\
+.tr-grow .ar{font-size:20px}\
+.tr-grow>span:not(:first-child){white-space:nowrap}\
+.tr-hist .tr-grows{display:grid!important;margin-top:6px}\
+.tr-hist .tr-grow{display:grid!important;align-items:stretch;margin:0}\
+.tr-grow.ok>span{border-color:#5fae84;background:#edf6f0}\
+.tr-grow.far .pc{color:#a3402f}.tr-grow.mid .pc{color:#9a5a12}.tr-grow.near .pc{color:#2f7a55}\
 .tr-bar.tr-bar-in{display:block;margin:-6px 0 18px;text-align:left}\
 .tr-bar-l{display:block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:rgba(61,64,91,.7);margin:0 0 4px 2px}\
 .tr-bar.tr-bar-in select{width:100%;background:#faf9f4!important}\
 .tr-more{margin-top:10px;width:100%;border:0;border-radius:12px;padding:14px;font:800 16px Inter,system-ui,sans-serif;background:#81b29a;color:#fff;cursor:pointer;box-shadow:0 4px 10px -4px rgba(61,64,91,.35)}\
 .tr-more:hover{opacity:.92}\
-.tr-flags{grid-template-columns:1fr!important;gap:10px!important}\
-@media(min-width:700px){.tr-flags{grid-template-columns:1fr 1fr!important}}\
-.tr-flag{position:relative;padding:10px 10px 6px!important}\
-.tr-flag .fi{aspect-ratio:auto!important;height:150px;overflow:hidden}\
-.tr-flag .fi img{max-height:150px!important;max-width:100%!important;width:auto;height:auto}\
+.tr-flags{grid-template-columns:1fr 1fr!important;gap:10px!important}\
+.tr-flag{position:relative;padding:12px 10px 6px!important;border-radius:14px!important}\
+.tr-flag .fi{aspect-ratio:1/1!important;width:100%;display:flex!important;align-items:center;justify-content:center;overflow:hidden}\
+.tr-flag .fi img{max-width:100%!important;max-height:100%!important;width:auto;height:auto}\
 .tr-flag span{font-size:13px!important;line-height:18px!important;min-height:18px!important}\
 .tr-flag .tr-zoom{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:9px;border:0;background:rgba(255,255,255,.95);box-shadow:0 1px 4px rgba(0,0,0,.25);display:grid;place-items:center;cursor:zoom-in;padding:0;z-index:2}\
 .tr-zoom svg{width:18px;height:18px;fill:none;stroke:#3d405b;stroke-width:2.4;stroke-linecap:round}\
@@ -170,6 +182,23 @@
     var b = Math.atan2(Math.sin(dl) * Math.cos(la2), Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl)) / R;
     var km = d < 100 ? Math.round(d / 5) * 5 : Math.round(d / 10) * 10;
     return { km: km, arrow: ARROWS[Math.round(((b + 360) % 360) / 45) % 8], text: km.toLocaleString('de-DE') + ' km ' + ARROWS[Math.round(((b + 360) % 360) / 45) % 8] };
+  }
+  /* Versuchszeile wie bei Worldle: Name | km | Richtung | Nähe in % */
+  function guessRow(guessName, target, ok, cap, capOk) {
+    var o = byName(guessName), row = el('div', 'tr-grow'), km = '–', ar = '', pc = '';
+    if (ok) { km = '0 km'; ar = '🎉'; pc = '100 %'; row.classList.add('ok'); }
+    else if (o && target) {
+      var h = hint(o, target);
+      if (h) {
+        var maxD = C.us ? 5000 : 20000, p = Math.max(0, Math.min(99, Math.round(100 * (1 - h.km / maxD))));
+        km = h.km.toLocaleString('de-DE') + ' km'; ar = h.arrow; pc = p + ' %';
+        row.classList.add(p >= 85 ? 'near' : p >= 60 ? 'mid' : 'far');
+      }
+    }
+    var nm = el('span'), b = el('b'); b.textContent = o ? o.name : (guessName || '?'); nm.appendChild(b);
+    if (cap) { var sm = el('small', capOk ? 'y' : 'n'); sm.textContent = cap; nm.appendChild(sm); }
+    row.appendChild(nm); row.appendChild(el('span', null, esc(km))); row.appendChild(el('span', 'ar', ar)); row.appendChild(el('span', 'pc', pc));
+    return row;
   }
   function byName(v) {
     var n = norm(v); if (!n) return null;
@@ -689,10 +718,8 @@
     }
     function paint(fromCheck) {
       mark(fN, G.res[0], P.n, it.name); mark(fC, G.res[1], P.c, it.hs);
-      fN.hist.innerHTML = P.ng.map(function (g) {
-        var o = byName(g), h = o && hint(o, it);
-        return '<div><span class="x">✗</span> ' + esc(o ? o.name : g) + (h ? ' <b>' + h.text + '</b>' : ' <small>(unbekannt)</small>') + '</div>';
-      }).join('');
+      fN.hist.innerHTML = '';
+      if (P.ng.length) { var gl = el('div', 'tr-grows'); P.ng.forEach(function (g) { gl.appendChild(guessRow(g, it, false)); }); fN.hist.appendChild(gl); }
       if (G.res[0] && G.res[1]) {
         chk.parentNode && row.remove();
         var cls = G.res[0] === 'far' && G.res[1] === 'far' ? 'far' : (G.res[0] === 'ok' && G.res[1] === 'ok') ? 'ok' : 'near';
@@ -968,6 +995,14 @@
     V.bar.appendChild(sel);
     V.game = el('div', 'tr-card tr-game hidden'); host.appendChild(V.game);
     moreButton();
+    /* freies Umriss-Quiz: Versuche als Tabelle (wird von logGuess in welt.html/usa.html benutzt) */
+    window.trRow = function (guess, cap, ok) {
+      var cur = null; try { cur = currentQuizItem; } catch (e) {}
+      var topo = cur && (cur.topoName || cur.state), it = null;
+      C.items.forEach(function (x) { if (!it && x.topo === topo) it = x; });
+      var capOk = !!(it && cap && [it.hs].concat(it.hsAlt || []).some(function (a) { return norm(a) === norm(cap); }));
+      return guessRow(guess, it, ok, cap, capOk);
+    };
     setView('outline');
     renderDaily();
     /* neuer Tag um Mitternacht (Wien) */
