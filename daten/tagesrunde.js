@@ -588,6 +588,33 @@
     })(0);
   }
 
+  /* Städtenamen ohne Überlappung: rechts, links, oben, unten oder schräg – die erste freie Stelle gewinnt, Hauptstadt zuerst */
+  function placeLabels(gl, kept, W, H) {
+    var placed = [], pad = 2;
+    var dotsBox = kept.map(function (k) { return { x: k.xy[0] - 9, y: k.xy[1] - 9, w: 18, h: 18 }; });
+    var hit = function (a, b) { return a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad; };
+    var order = kept.map(function (k, i) { return i; }).sort(function (a, b) { return (kept[b].p[3] ? 1 : 0) - (kept[a].p[3] ? 1 : 0); });
+    order.forEach(function (i) {
+      var k = kept[i], x = k.xy[0], y = k.xy[1];
+      var t = gl.append('text').attr('class', 'lbl' + (k.p[3] ? ' cap' : '')).text(k.p[0]);
+      var cands = [[x + 13, y + 4, 'start'], [x - 13, y + 4, 'end'], [x, y - 13, 'middle'], [x, y + 21, 'middle'],
+        [x + 10, y - 9, 'start'], [x - 10, y - 9, 'end'], [x + 10, y + 17, 'start'], [x - 10, y + 17, 'end']];
+      var best = null;
+      cands.forEach(function (c, ci) {
+        if (best && best.score === 0) return;
+        t.attr('x', c[0]).attr('y', c[1]).attr('text-anchor', c[2]);
+        var bb; try { bb = t.node().getBBox(); } catch (e) { bb = { x: c[0], y: c[1] - 10, width: 60, height: 12 }; }
+        var box = { x: bb.x, y: bb.y, w: bb.width, h: bb.height }, score = ci * 0.01;
+        if (box.x < 2 || box.y < 2 || box.x + box.w > W - 2 || box.y + box.h > H - 2) score += 50;
+        placed.forEach(function (p) { if (hit(box, p)) score += 100; });
+        dotsBox.forEach(function (d, di) { if (di !== i && hit(box, d)) score += 80; });
+        if (!best || score < best.score) best = { c: c, box: box, score: score < 1 ? 0 : score };
+      });
+      t.attr('x', best.c[0]).attr('y', best.c[1]).attr('text-anchor', best.c[2]);
+      placed.push(best.box);
+    });
+  }
+
   /* „Weiß ich nicht“: Runde ohne weitere Versuche auflösen */
   function giveRow(F, fn) {
     var row = el('div', 'tr-row tr-give'), b = el('button', 'tr-btn soft', 'Weiß ich nicht');
@@ -828,6 +855,8 @@
           .on('click', function () { tap(i); });
         return c;
       });
+      /* die Karte wird nach dem Laden der genauen Umrisse neu gezeichnet: alten Knopf entfernen */
+      var oldGv = F.body.querySelector('.tr-give'); if (oldGv) oldGv.remove();
       var gv = G.res[2] == null ? giveRow(F, function () { if (G.res[2] != null) return; G.res[2] = 'far'; paint(true); }) : null;
       function tap(i) {
         if (G.res[2] != null || P.wrong.indexOf(i) >= 0) return;
@@ -842,12 +871,8 @@
           save(); refreshHead(); return;
         }
         if (gv) gv.remove();
-        kept.forEach(function (k, i) {
-          if (k.p[3]) dots[i].classed(G.res[2] === 'far' ? 'show' : 'good', true);
-          var x = k.xy[0], right = x > S.w - 90;
-          gl.append('text').attr('class', 'lbl' + (k.p[3] ? ' cap' : '')).attr('x', right ? x - 13 : x + 13).attr('y', k.xy[1] + 4)
-            .attr('text-anchor', right ? 'end' : 'start').text(k.p[0]);
-        });
+        kept.forEach(function (k, i) { if (k.p[3]) dots[i].classed(G.res[2] === 'far' ? 'show' : 'good', true); });
+        placeLabels(gl, kept, S.w, S.h);
         feedback(F.fb, G.res[2], G.res[2] === 'ok' ? 'Richtig – das ist ' + esc(it.hs) + '!' : G.res[2] === 'near' ? 'Im zweiten Versuch richtig.' : 'Leider nicht – ' + esc(it.hs) + ' ist grün markiert.');
         doneStep(F);
       }
@@ -970,12 +995,11 @@
     var end = el('div', 'tr-end'), cp = el('div', 'tr-copied');
     if (G.mode === 'daily') {
       var sh = el('button', 'tr-btn full', 'Ergebnis teilen'); sh.onclick = function () { share(cp); }; end.appendChild(sh);
-      var more = el('button', 'tr-btn green', 'Weiter spielen'); more.onclick = function () { startFree(); scrollTop(); }; end.appendChild(more);
+      var more = el('button', 'tr-btn green full', 'Weiter spielen'); more.onclick = function () { startFree(); scrollTop(); }; end.appendChild(more);
     } else {
-      var nx = el('button', 'tr-btn green', 'Nächstes ' + (C.us ? 'Bundesstaat' : 'Land')); if (C.us) nx.textContent = 'Nächster Staat';
+      var nx = el('button', 'tr-btn green full', 'Nächstes ' + (C.us ? 'Bundesstaat' : 'Land')); if (C.us) nx.textContent = 'Nächster Staat';
       nx.onclick = function () { startFree(); scrollTop(); }; end.appendChild(nx);
     }
-    var ou = el('button', 'tr-btn soft', 'Nur Umrisse üben'); ou.onclick = outlineMode; end.appendChild(ou);
     r.appendChild(end); r.appendChild(cp);
     V.game.appendChild(r);
     if (G.mode === 'daily') renderDaily();
@@ -990,12 +1014,6 @@
     else fallback(t, ok);
   }
   function fallback(t, ok) { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); ok(); } catch (e) {} ta.remove(); }
-
-  function outlineMode() {
-    setView('outline'); renderDaily();
-    try { C.outline.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-    if (C.onOutline) C.onOutline();
-  }
 
   /* ---------- Filter ---------- */
   function inFilter(it) { var f = store.get(C.key + 'Filter', ''); return !f || groupOf(it).indexOf(f) >= 0; }
