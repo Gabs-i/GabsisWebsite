@@ -117,6 +117,7 @@
 .tr-grow>span:not(:first-child){white-space:nowrap}\
 .tr-hist .tr-grows{display:grid!important;margin-top:6px}\
 .tr-hist .tr-grow{display:grid!important;align-items:stretch;margin:0}\
+.tr-hist .tr-grow b{margin:0;white-space:nowrap}\
 .tr-grow.ok>span{border-color:#5fae84;background:#edf6f0}\
 .tr-grow.far .pc{color:#a3402f}.tr-grow.mid .pc{color:#9a5a12}.tr-grow.near .pc{color:#2f7a55}\
 .tr-bar.tr-bar-in{display:block;margin:-6px 0 18px;text-align:left}\
@@ -177,7 +178,11 @@
   var ARROWS = ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️'];
   function hint(from, to) {
     if (!from || !to || from === to || !from.mitte || !to.mitte) return null;
-    var R = Math.PI / 180, la1 = from.mitte[0] * R, la2 = to.mitte[0] * R, dl = (to.mitte[1] - from.mitte[1]) * R;
+    return hintPos(from.mitte, to.mitte);
+  }
+  function hintPos(a, c) {
+    if (!a || !c) return null;
+    var R = Math.PI / 180, la1 = a[0] * R, la2 = c[0] * R, dl = (c[1] - a[1]) * R;
     var d = 2 * 6371 * Math.asin(Math.sqrt(Math.pow(Math.sin((la2 - la1) / 2), 2) + Math.cos(la1) * Math.cos(la2) * Math.pow(Math.sin(dl / 2), 2)));
     var b = Math.atan2(Math.sin(dl) * Math.cos(la2), Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl)) / R;
     var km = d < 100 ? Math.round(d / 5) * 5 : Math.round(d / 10) * 10;
@@ -197,6 +202,25 @@
     }
     var nm = el('span'), b = el('b'); b.textContent = o ? o.name : (guessName || '?'); nm.appendChild(b);
     if (cap) { var sm = el('small', capOk ? 'y' : 'n'); sm.textContent = cap; nm.appendChild(sm); }
+    row.appendChild(nm); row.appendChild(el('span', null, esc(km))); row.appendChild(el('span', 'ar', ar)); row.appendChild(el('span', 'pc', pc));
+    return row;
+  }
+  /* Hauptstadt-Versuch: getippte Hauptstadt → gesuchte Hauptstadt */
+  function byCap(v) {
+    var n = norm(v); if (!n) return null;
+    for (var i = 0; i < C.items.length; i++) { var it = C.items[i]; if ([it.hs].concat(it.hsAlt || []).some(function (a) { return norm(a) === n; })) return it; }
+    return null;
+  }
+  function capRow(guess, target) {
+    var o = byCap(guess), row = el('div', 'tr-grow'), km = '–', ar = '', pc = '';
+    var h = o && target && o !== target ? hintPos(o.hsPos, target.hsPos) : null;
+    if (h) {
+      var maxD = C.us ? 5000 : 20000, p = Math.max(0, Math.min(99, Math.round(100 * (1 - h.km / maxD))));
+      km = h.km.toLocaleString('de-DE') + ' km'; ar = h.arrow; pc = p + ' %';
+      row.classList.add(p >= 85 ? 'near' : p >= 60 ? 'mid' : 'far');
+    }
+    var nm = el('span'), b = el('b'); b.textContent = o ? o.hs : (guess || '?'); nm.appendChild(b);
+    var sm = el('small'); sm.style.color = '#7b7d93'; sm.textContent = o ? o.name : 'unbekannt'; nm.appendChild(sm);
     row.appendChild(nm); row.appendChild(el('span', null, esc(km))); row.appendChild(el('span', 'ar', ar)); row.appendChild(el('span', 'pc', pc));
     return row;
   }
@@ -687,7 +711,7 @@
     var F = frame(C.us ? 'Welcher Bundesstaat ist das?' : 'Welches Land ist das?');
     var box = el('div', 'tr-map'); F.body.appendChild(box);
     withFeature(box, it, function (f) { drawShape(box, it, f, null); });
-    var P = G.part.r1 || (G.part.r1 = { n: 0, c: 0, nv: '', cv: '' }); P.ng = P.ng || [];
+    var P = G.part.r1 || (G.part.r1 = { n: 0, c: 0, nv: '', cv: '' }); P.ng = P.ng || []; P.cg = P.cg || [];
     var fields = el('div', 'tr-fields'); F.body.appendChild(fields);
     var fN = field(C.us ? 'Bundesstaat' : 'Land', C.namen), fC = field('Hauptstadt', C.hauptstaedte);
     fields.appendChild(fN.w); fields.appendChild(fC.w);
@@ -701,8 +725,11 @@
     function okCap(v) { var n = norm(v); return !!n && [it.hs].concat(it.hsAlt || []).some(function (a) { return norm(a) === n; }); }
     function check() {
       fN.close(); fC.close();
-      if (G.res[0] == null) { P.nv = fN.inp.value.trim(); P.n++; if (okName(P.nv)) G.res[0] = P.n === 1 ? 'ok' : 'near'; else { P.ng.push(P.nv); if (P.n >= 2) G.res[0] = 'far'; } }
-      if (G.res[1] == null) { P.cv = fC.inp.value.trim(); P.c++; if (okCap(P.cv)) G.res[1] = P.c === 1 ? 'ok' : 'near'; else if (P.c >= 2) G.res[1] = 'far'; }
+      /* leere Felder zählen nicht als Versuch */
+      var nv = fN.inp.value.trim(), cv = fC.inp.value.trim();
+      if ((G.res[0] != null || !nv) && (G.res[1] != null || !cv)) { (G.res[0] == null ? fN : fC).inp.focus(); return; }
+      if (G.res[0] == null && nv) { P.nv = nv; P.n++; if (okName(P.nv)) G.res[0] = P.n === 1 ? 'ok' : 'near'; else { P.ng.push(P.nv); if (P.n >= 2) G.res[0] = 'far'; } }
+      if (G.res[1] == null && cv) { P.cv = cv; P.c++; if (okCap(P.cv)) G.res[1] = P.c === 1 ? 'ok' : 'near'; else { if (P.cv) P.cg.push(P.cv); if (P.c >= 2) G.res[1] = 'far'; } }
       paint(true);
     }
     function mark(fl, r, tries, sol) {
@@ -720,6 +747,8 @@
       mark(fN, G.res[0], P.n, it.name); mark(fC, G.res[1], P.c, it.hs);
       fN.hist.innerHTML = '';
       if (P.ng.length) { var gl = el('div', 'tr-grows'); P.ng.forEach(function (g) { gl.appendChild(guessRow(g, it, false)); }); fN.hist.appendChild(gl); }
+      fC.hist.innerHTML = '';
+      if (P.cg.length) { var cl = el('div', 'tr-grows'); P.cg.forEach(function (g) { cl.appendChild(capRow(g, it)); }); fC.hist.appendChild(cl); }
       if (G.res[0] && G.res[1]) {
         chk.parentNode && row.remove();
         var cls = G.res[0] === 'far' && G.res[1] === 'far' ? 'far' : (G.res[0] === 'ok' && G.res[1] === 'ok') ? 'ok' : 'near';
