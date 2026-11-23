@@ -104,6 +104,27 @@
 .tr-end .full{grid-column:1/-1}\
 .tr-copied{font-size:13px;color:var(--ok);text-align:center;margin-top:6px;min-height:18px;font-weight:700}\
 .tr-wait{display:grid;place-items:center;height:100%;color:var(--muted);font-weight:700}\
+.tr-give{margin-top:14px}\
+.tr-bar.tr-bar-in{display:block;margin:-6px 0 18px;text-align:left}\
+.tr-bar-l{display:block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:rgba(61,64,91,.7);margin:0 0 4px 2px}\
+.tr-bar.tr-bar-in select{width:100%;background:#faf9f4!important}\
+.tr-more{margin-top:10px;width:100%;border:0;border-radius:12px;padding:14px;font:800 16px Inter,system-ui,sans-serif;background:#81b29a;color:#fff;cursor:pointer;box-shadow:0 4px 10px -4px rgba(61,64,91,.35)}\
+.tr-more:hover{opacity:.92}\
+.tr-flags{grid-template-columns:1fr!important;gap:10px!important}\
+@media(min-width:700px){.tr-flags{grid-template-columns:1fr 1fr!important}}\
+.tr-flag{position:relative;padding:10px 10px 6px!important}\
+.tr-flag .fi{aspect-ratio:auto!important;height:150px;overflow:hidden}\
+.tr-flag .fi img{max-height:150px!important;max-width:100%!important;width:auto;height:auto}\
+.tr-flag span{font-size:13px!important;line-height:18px!important;min-height:18px!important}\
+.tr-flag .tr-zoom{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:9px;border:0;background:rgba(255,255,255,.95);box-shadow:0 1px 4px rgba(0,0,0,.25);display:grid;place-items:center;cursor:zoom-in;padding:0;z-index:2}\
+.tr-zoom svg{width:18px;height:18px;fill:none;stroke:#3d405b;stroke-width:2.4;stroke-linecap:round}\
+.tr-lb{position:fixed;inset:0;z-index:1000;background:rgba(29,31,48,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;cursor:zoom-out}\
+.tr-lb img{max-width:94vw;max-height:72vh;display:block;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5)}\
+.tr-lb span{color:#fff;font:700 14px Inter,system-ui,sans-serif;opacity:.85}\
+.tr-opt .pic{display:block;width:100%;aspect-ratio:4/3;border-radius:8px;background:#ece8d8 center/cover no-repeat;margin-bottom:8px}\
+.tr-opt .pic.none{display:none}\
+.tr-credit{font-size:11px;color:var(--muted);margin-top:8px;text-align:left}\
+.tr-credit a{color:inherit}\
 ';
 
   function $(id) { return document.getElementById(id); }
@@ -342,9 +363,63 @@
     nx.onclick = function () { G.step++; save(); if (G.step >= 5) finish(); else renderStep(); };
     return { body: body, fb: fb, next: nx };
   }
+  /* Bild groß anzeigen (Flaggen, Blumen); Tippen schließt */
+  function lightbox(src, cap) {
+    var lb = el('div', 'tr-lb'), im = el('img'); im.src = src; im.alt = cap || '';
+    lb.appendChild(im); lb.appendChild(el('span', null, esc(cap || '') + ' · Tippen zum Schließen'));
+    var close = function () { lb.remove(); document.removeEventListener('keydown', key); };
+    var key = function (e) { if (e.key === 'Escape') close(); };
+    lb.onclick = close; document.addEventListener('keydown', key); document.body.appendChild(lb);
+  }
+
+  /* ---------- Bilder von Wikipedia (State Flower / Nationalblume) ---------- */
+  var WIKI = {
+    'Kamelie': 'Camellia', 'Vergissmeinnicht': 'Myosotis', 'Saguaro-Blüte': 'Saguaro', 'Apfelblüte': ['Apple blossom', 'Malus'],
+    'Kalifornischer Mohn': 'Eschscholzia californica', 'Rocky-Mountain-Akelei': 'Aquilegia coerulea', 'Berglorbeer': 'Kalmia latifolia',
+    'Pfirsichblüte': ['Peach blossom', 'Prunus persica'], 'Orangenblüte': ['Orange blossom', 'Orange (fruit)'], 'Cherokee-Rose': 'Rosa laevigata',
+    'Gelber Hibiskus': 'Hibiscus brackenridgei', 'Pfeifenstrauch': 'Philadelphus lewisii', 'Veilchen': 'Viola sororia', 'Pfingstrose': 'Paeonia',
+    'Wildrose': ['Rosa arkansana', 'Rosa blanda'], 'Sonnenblume': 'Helianthus annuus', 'Goldrute': 'Solidago', 'Magnolie': 'Magnolia grandiflora',
+    'Kiefernzapfen und -quaste': 'Pinus strobus', 'Schwarzäugige Susanne': 'Rudbeckia hirta', 'Mayflower': 'Epigaea repens',
+    'Frauenschuh': 'Cypripedium reginae', 'Weißdorn': 'Crataegus', 'Bitterroot': 'Lewisia rediviva', 'Beifuß': 'Artemisia tridentata',
+    'Flieder': 'Syringa vulgaris', 'Yucca': 'Yucca', 'Rose': 'Rose', 'Blüten-Hartriegel': 'Cornus florida', 'Rote Nelke': 'Dianthus caryophyllus',
+    'Mahonie': 'Mahonia aquifolium', 'Gelber Jasmin': 'Gelsemium sempervirens', 'Küchenschelle': 'Pulsatilla patens', 'Iris': 'Iris (plant)',
+    'Texas-Lupine': 'Lupinus texensis', 'Mormonentulpe': 'Calochortus nuttallii', 'Rotklee': 'Trifolium pratense',
+    'Pazifischer Rhododendron': 'Rhododendron macrophyllum', 'Rhododendron': 'Rhododendron', 'Kastilleja': 'Castilleja linariifolia',
+    'Flor de Maga': 'Thespesia grandiflora', 'Bougainvillea': 'Bougainvillea', 'Gelbe Trompetenblume': 'Tecoma stans', 'Plumeria': 'Plumeria',
+    'Edelweiß': 'Leontopodium nivale', 'Tulpe': 'Tulip', 'Kirschblüte': 'Cherry blossom', 'Lotus': 'Nelumbo nucifera', 'Kornblume': 'Centaurea cyanus',
+    'Nelke': 'Dianthus caryophyllus', 'Maiglöckchen': 'Convallaria majalis', 'Moosglöckchen': 'Linnaea borealis', 'Heidekraut': 'Calluna vulgaris',
+    'Margerite': 'Leucanthemum vulgare', 'Kleeblatt': 'Shamrock', 'Dahlie': 'Dahlia', 'Ceibo': 'Erythrina crista-galli', 'Copihue': 'Lapageria',
+    'Cantuta': 'Cantua buxifolia', 'Orchidee': 'Orchidaceae', 'Hibiskus (Mugunghwa)': 'Hibiscus syriacus', 'Hibiskus': 'Hibiscus',
+    'Röhrenkassie': 'Cassia fistula', 'Jasmin': 'Jasmine', 'Sampaguita-Jasmin': 'Jasminum sambac', 'Seerose': 'Nymphaea',
+    'Blaue Seerose': 'Nymphaea caerulea', 'Goldakazie': 'Acacia pycnantha', 'Königsprotea': 'Protea cynaroides', 'Anemone': 'Anemone coronaria',
+    'Raute': 'Ruta graveolens', 'Silberwurz': 'Dryas octopetala', 'Weiße Schmetterlingsblume': 'Hedychium coronarium',
+    'Lignum vitae': 'Guaiacum officinale', 'Passionsblume': 'Passiflora', 'Weiße Nonne (Orchidee)': 'Lycaste skinneri',
+    'Guaria Morada (Orchidee)': 'Guarianthe skinneri', 'Heilig-Geist-Orchidee': 'Peristeria elata', 'Kalla': 'Zantedeschia aethiopica',
+    'Stolz von Barbados': 'Caesalpinia pulcherrima', 'Bwa Kwaib': 'Sabinea carinalis', 'Orchidee (Vanda Miss Joaquim)': 'Papilionanthe Miss Joaquim',
+    'Maltesische Flockenblume': 'Cheirolophus crassifolius'
+  };
+  function wikiThumb(name, cb) {
+    var titles = WIKI[name]; if (!titles) return cb(null);
+    titles = [].concat(titles);
+    var cache = store.get('trWikiImg', {});
+    if (cache[name] !== undefined) return cb(cache[name]);
+    (function next(i) {
+      if (i >= titles.length) { cache[name] = null; store.set('trWikiImg', cache); return cb(null); }
+      fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(titles[i].replace(/ /g, '_')) + '?redirect=true')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var src = j && (j.thumbnail && j.thumbnail.source);
+          if (!src) return next(i + 1);
+          var c = store.get('trWikiImg', {}); c[name] = { src: src, big: (j.originalimage && j.originalimage.source) || src, page: (j.content_urls && j.content_urls.desktop && j.content_urls.desktop.page) || '' };
+          store.set('trWikiImg', c); cb(c[name]);
+        })
+        .catch(function () { cb(null); });
+    })(0);
+  }
+
   /* „Weiß ich nicht“: Runde ohne weitere Versuche auflösen */
   function giveRow(F, fn) {
-    var row = el('div', 'tr-row'), b = el('button', 'tr-btn soft', 'Weiß ich nicht');
+    var row = el('div', 'tr-row tr-give'), b = el('button', 'tr-btn soft', 'Weiß ich nicht');
     b.type = 'button'; b.onclick = fn; row.appendChild(b); F.body.appendChild(row); return row;
   }
   function feedback(f, cls, html) { f.className = 'tr-fb ' + cls; f.innerHTML = html; }
@@ -622,9 +697,22 @@
     var R = G.R.frage;
     if (!R) { G.res[4] = 'skip'; G.step++; save(); return renderStep(); }
     var F = frame(esc(R.q));
-    choice(F, R.opts.map(esc), R.right, 4, R.opts.every(function (o) { return o.length <= 22; }), function (r) {
+    var pics = R.kind === 'blume';
+    var bs = choice(F, R.opts.map(function (o) { return (pics ? '<span class="pic"></span>' : '') + esc(o); }), R.right, 4, pics || R.opts.every(function (o) { return o.length <= 22; }), function (r) {
       feedback(F.fb, r, r === 'ok' ? 'Richtig!' : 'Richtig wäre: <b>' + esc(R.opts[R.right]) + '</b>.');
     });
+    if (pics) {
+      var any = false, credit = el('div', 'tr-credit hidden', 'Bilder: <a href="https://en.wikipedia.org" target="_blank" rel="noopener">Wikipedia / Wikimedia Commons</a>');
+      F.body.appendChild(credit);
+      R.opts.forEach(function (o, i) {
+        var pic = bs[i].querySelector('.pic');
+        wikiThumb(o, function (w) {
+          if (!w) { pic.classList.add('none'); return; }
+          pic.style.backgroundImage = 'url("' + w.src.replace(/"/g, '%22') + '")';
+          if (!any) { any = true; credit.classList.remove('hidden'); }
+        });
+      });
+    }
   }
 
   function choice(F, opts, right, slot, two, after) {
@@ -642,6 +730,7 @@
       after(G.res[slot]); doneStep(F);
     }
     paint();
+    return bs;
   }
 
   /* ---------- Runde 5: Flagge ---------- */
@@ -654,6 +743,11 @@
       var b = el('button', 'tr-flag'); b.type = 'button';
       var img = el('img'); img.alt = 'Flagge ' + (i + 1); img.src = C.flaggen.ordner + C.flaggen.datei[id]; img.draggable = false;
       var fi = el('div', 'fi'); fi.appendChild(img); b.appendChild(fi); b.appendChild(el('span'));
+      var zb = el('i', 'tr-zoom', '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>');
+      zb.setAttribute('role', 'button'); zb.setAttribute('aria-label', 'Flagge vergrößern'); zb.tabIndex = 0;
+      zb.onclick = function (e) { e.stopPropagation(); e.preventDefault(); lightbox(img.src, G.res[5] != null ? IDX[id].name : 'Flagge ' + (i + 1)); };
+      zb.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') zb.onclick(e); };
+      b.appendChild(zb);
       b.onclick = function () {
         if (G.res[5] != null || P.wrong.indexOf(i) >= 0) return;
         if (i === R.right) G.res[5] = P.wrong.length ? 'near' : 'ok';
@@ -734,7 +828,11 @@
     var st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     var host = C.host; host.classList.add('tr');
     V.daily = el('div', 'tr-card tr-daily'); host.appendChild(V.daily);
-    V.bar = el('div', 'tr-bar'); host.appendChild(V.bar);
+    V.bar = el('div', 'tr-bar');
+    /* Filter direkt in der Quiz-Karte unter Versuch/Rotation, nicht als eigene Leiste */
+    var rot = document.getElementById('quiz-rotation-select'), hdr = rot && rot.closest('.border-b');
+    if (hdr && hdr.parentNode) { V.bar.classList.add('tr-bar-in'); V.bar.appendChild(el('label', 'tr-bar-l', esc(C.filterName))); hdr.parentNode.insertBefore(V.bar, hdr.nextSibling); }
+    else host.appendChild(V.bar);
     var sel = el('select'); sel.setAttribute('aria-label', C.filterName);
     sel.innerHTML = C.filter.map(function (f) { return '<option value="' + f[0] + '">' + esc(f[1]) + '</option>'; }).join('');
     sel.value = store.get(C.key + 'Filter', '');
@@ -742,11 +840,40 @@
     sel.onchange = function () { store.set(C.key + 'Filter', sel.value); if (V.view === 'free') startFree(); else if (C.onFilter) C.onFilter(); };
     V.bar.appendChild(sel);
     V.game = el('div', 'tr-card tr-game hidden'); host.appendChild(V.game);
+    moreButton();
     setView('outline');
     renderDaily();
     /* neuer Tag um Mitternacht (Wien) */
     var last = todayKey();
     setInterval(function () { var k = todayKey(); if (k !== last) { last = k; if (V.view !== 'daily') renderDaily(); } }, 30000);
+  }
+
+  /* Im freien Umriss-Quiz nach dem Lösen oder Aufgeben: mit Runde 2–5 zum selben Land weitermachen */
+  function moreButton() {
+    var nextBtn = document.getElementById('quiz-next-btn'); if (!nextBtn) return;
+    var mb = el('button', 'tr-more hidden', 'Weitere Runden zu ' + (C.us ? 'diesem Staat' : 'diesem Land') + ' →'); mb.type = 'button';
+    nextBtn.parentNode.insertBefore(mb, nextBtn.nextSibling);
+    var gave = false;
+    if (typeof window.giveUp === 'function') { var g0 = window.giveUp; window.giveUp = function () { gave = true; return g0.apply(this, arguments); }; }
+    if (typeof window.initQuiz === 'function') { var i0 = window.initQuiz; window.initQuiz = function () { gave = false; return i0.apply(this, arguments); }; }
+    var sync = function () { mb.classList.toggle('hidden', nextBtn.classList.contains('hidden')); };
+    try { new MutationObserver(sync).observe(nextBtn, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
+    sync();
+    mb.onclick = function () {
+      var cur = window.currentQuizItem; try { cur = cur || currentQuizItem; } catch (e) {}
+      if (!cur) return;
+      var topo = cur.topoName || cur.state, it = null;
+      C.items.forEach(function (x) { if (!it && x.topo === topo) it = x; });
+      if (!it) return;
+      var sI = document.getElementById('quiz-state-input'), cI = document.getElementById('quiz-capital-input'), tries = 1;
+      try { tries = guesses; } catch (e) {}
+      var okN = !gave && sI && [it.name].concat(it.alias || []).some(function (a) { return norm(a) === norm(sI.value); });
+      var okC = !gave && cI && [it.hs].concat(it.hsAlt || []).some(function (a) { return norm(a) === norm(cI.value); });
+      G = newGame('free', it, null);
+      G.res[0] = okN ? (tries <= 1 ? 'ok' : 'near') : 'far';
+      G.res[1] = okC ? (tries <= 1 ? 'ok' : 'near') : 'far';
+      G.step = 1; setView('free'); renderStep(); scrollTop();
+    };
   }
 
   window.UmrissTag = {
